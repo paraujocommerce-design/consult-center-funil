@@ -1,0 +1,1189 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Consult Center – Funil de Vendas</title>
+<style>
+  .sync-dot{width:8px;height:8px;border-radius:50%;display:inline-block;}
+  .sync-ok{background:#22c55e;}
+  .sync-off{background:#94a3b8;}
+  .sync-err{background:#ef4444;}
+  .sync-ing{background:#f59e0b;animation:pulse 1s infinite;}
+  @keyframes pulse{0%,100%{opacity:1}50%{opacity:.4}}
+</style>
+<script src="https://cdn.tailwindcss.com"></script>
+<style>
+  *{box-sizing:border-box;}
+  html,body{height:100%;overflow:hidden;margin:0;padding:0;font-family:'Inter',system-ui,sans-serif;}
+  ::-webkit-scrollbar{width:5px;height:5px;}
+  ::-webkit-scrollbar-track{background:#f1f1f1;}
+  ::-webkit-scrollbar-thumb{background:#cbd5e1;border-radius:4px;}
+  .tab-btn.active{border-bottom:2px solid #0f4c81;color:#0f4c81;font-weight:600;}
+  .tab-btn{border-bottom:2px solid transparent;color:#64748b;}
+  .kanban-col{min-width:170px;max-width:170px;}
+  .kanban-card{cursor:pointer;transition:box-shadow .15s;}
+  .kanban-card:hover{box-shadow:0 4px 12px rgba(0,0,0,.15);}
+  .overlay{position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:50;display:flex;align-items:center;justify-content:center;}
+  .modal{background:#fff;border-radius:10px;max-height:90vh;overflow-y:auto;width:100%;max-width:700px;box-shadow:0 20px 60px rgba(0,0,0,.25);}
+  .modal-sm{max-width:420px;}
+  .badge{display:inline-block;padding:1px 8px;border-radius:99px;font-size:11px;font-weight:600;}
+  .stage-0{background:#e2e8f0;color:#475569;}
+  .stage-1{background:#dbeafe;color:#1d4ed8;}
+  .stage-2{background:#fef9c3;color:#854d0e;}
+  .stage-3{background:#fed7aa;color:#9a3412;}
+  .stage-4{background:#bbf7d0;color:#166534;}
+  .stage-5{background:#fecaca;color:#991b1b;}
+  .stage-6{background:#e9d5ff;color:#6b21a8;}
+  .metric-card{background:#fff;border-radius:8px;padding:10px 14px;border:1px solid #e2e8f0;}
+  .section-h{height:calc(100vh - 56px);}
+  input,select,textarea{font-size:13px;}
+  label{font-size:12px;font-weight:500;color:#374151;}
+  .form-input{width:100%;border:1px solid #d1d5db;border-radius:6px;padding:5px 8px;font-size:13px;outline:none;}
+  .form-input:focus{border-color:#0f4c81;box-shadow:0 0 0 2px rgba(15,76,129,.1);}
+  .btn-primary{background:#0f4c81;color:#fff;border-radius:6px;padding:5px 14px;font-size:13px;font-weight:600;cursor:pointer;border:none;}
+  .btn-primary:hover{background:#0d3f6e;}
+  .btn-ghost{background:transparent;border:1px solid #d1d5db;border-radius:6px;padding:5px 12px;font-size:13px;cursor:pointer;color:#374151;}
+  .btn-ghost:hover{background:#f1f5f9;}
+  .btn-danger{background:#dc2626;color:#fff;border-radius:6px;padding:5px 12px;font-size:13px;cursor:pointer;border:none;}
+  .btn-danger:hover{background:#b91c1c;}
+  .row-hover:hover{background:#f8fafc;}
+  .approval-pending{background:#fff7ed;border:1px solid #fed7aa;color:#9a3412;}
+  .approval-ok{background:#f0fdf4;border:1px solid #bbf7d0;color:#166534;}
+  .approval-rejected{background:#fef2f2;border:1px solid #fecaca;color:#991b1b;}
+</style>
+</head>
+<body class="bg-slate-100">
+
+<!-- HEADER -->
+<header class="bg-white border-b border-slate-200 flex items-center h-14 px-4 gap-6 flex-shrink-0">
+  <div class="flex items-center gap-2 mr-4">
+    <div class="w-7 h-7 rounded-lg bg-blue-800 flex items-center justify-center">
+      <span class="text-white text-xs font-bold">CC</span>
+    </div>
+    <span class="font-bold text-blue-900 text-sm leading-tight">Consult Center<br><span class="text-slate-400 font-normal text-xs">Funil de Vendas</span></span>
+  </div>
+  <nav class="flex gap-1 h-full">
+    <button class="tab-btn active px-4 text-sm transition-colors" onclick="switchTab('dashboard')">Dashboard</button>
+    <button class="tab-btn px-4 text-sm transition-colors" onclick="switchTab('clientes')">Clientes</button>
+    <button class="tab-btn px-4 text-sm transition-colors" onclick="switchTab('produtos')">Produtos</button>
+    <button class="tab-btn px-4 text-sm transition-colors" onclick="switchTab('funil')">Funil</button>
+    <button class="tab-btn px-4 text-sm transition-colors" onclick="switchTab('propostas')">Propostas</button>
+  </nav>
+  <div class="ml-auto flex items-center gap-3">
+    <button onclick="openConfigModal()" title="Configurar Google Sheets" class="flex items-center gap-1.5 text-xs text-slate-500 hover:text-blue-700 px-2 py-1 rounded hover:bg-slate-100">
+      <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"/><circle cx="12" cy="12" r="3"/></svg>
+      Sheets
+    </button>
+    <div class="flex items-center gap-1.5 text-xs text-slate-400">
+      <span class="sync-dot sync-off" id="sync-dot"></span>
+      <span id="sync-label">Sem sincronização</span>
+    </div>
+    <div class="text-xs text-slate-400" id="current-date"></div>
+  </div>
+</header>
+
+<!-- MODAL CONFIG SHEETS -->
+<div id="modal-config" class="overlay hidden" onclick="if(event.target===this)closeModal('modal-config')">
+  <div class="modal modal-sm p-0" style="max-width:460px">
+    <div class="flex items-center justify-between px-5 py-3 border-b border-slate-100">
+      <span class="font-bold text-slate-700">Configurar Google Sheets</span>
+      <button onclick="closeModal('modal-config')" class="text-slate-400 hover:text-slate-600 text-lg font-bold">&times;</button>
+    </div>
+    <div class="p-4 flex flex-col gap-3">
+      <p class="text-xs text-slate-500">Cole abaixo a URL do seu Google Apps Script Web App para sincronizar os dados com o Google Sheets.</p>
+      <div>
+        <label>URL do Web App (Apps Script)</label>
+        <input id="config-api-url" class="form-input mt-1" placeholder="https://script.google.com/macros/s/.../exec"/>
+      </div>
+      <div id="config-test-result" class="hidden text-xs rounded px-3 py-2"></div>
+      <div class="bg-blue-50 border border-blue-100 rounded-lg p-3 text-xs text-blue-700 leading-relaxed">
+        <strong>Como configurar:</strong><br/>
+        1. Abra <a href="https://script.google.com" target="_blank" class="underline">script.google.com</a><br/>
+        2. Crie um novo projeto e cole o conteúdo do arquivo <strong>Code.gs</strong><br/>
+        3. Clique em <strong>Implantar → Nova implantação</strong><br/>
+        4. Tipo: <strong>App da Web</strong> · Executar como: <strong>Eu</strong> · Acesso: <strong>Qualquer pessoa</strong><br/>
+        5. Copie a URL gerada e cole acima
+      </div>
+    </div>
+    <div class="flex justify-between items-center px-5 py-3 border-t border-slate-100 bg-slate-50">
+      <button class="btn-ghost" onclick="testApiConnection()">Testar conexão</button>
+      <div class="flex gap-2">
+        <button class="btn-ghost" onclick="clearApiConfig()">Remover</button>
+        <button class="btn-primary" onclick="saveApiConfig()">Salvar</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- TABS CONTENT -->
+<main class="section-h overflow-hidden">
+
+<!-- ===== DASHBOARD ===== -->
+<div id="tab-dashboard" class="h-full p-3 flex flex-col gap-2">
+  <!-- Row 1: 5 metrics -->
+  <div class="grid grid-cols-5 gap-2 flex-shrink-0">
+    <div class="metric-card">
+      <div class="text-xs text-slate-500">Leads no Funil</div>
+      <div class="text-2xl font-bold text-blue-800" id="d-total-leads">0</div>
+    </div>
+    <div class="metric-card">
+      <div class="text-xs text-slate-500">Propostas Enviadas</div>
+      <div class="text-2xl font-bold text-amber-600" id="d-propostas">0</div>
+    </div>
+    <div class="metric-card">
+      <div class="text-xs text-slate-500">Fechados</div>
+      <div class="text-2xl font-bold text-green-600" id="d-fechados">0</div>
+    </div>
+    <div class="metric-card">
+      <div class="text-xs text-slate-500">Perdidos</div>
+      <div class="text-2xl font-bold text-red-500" id="d-perdidos">0</div>
+    </div>
+    <div class="metric-card">
+      <div class="text-xs text-slate-500">Em Negociação (R$)</div>
+      <div class="text-2xl font-bold text-indigo-600" id="d-val-negoc">0</div>
+    </div>
+  </div>
+  <!-- Row 2: valor fechado + segmentos + produtos -->
+  <div class="grid grid-cols-3 gap-2 flex-shrink-0">
+    <div class="metric-card flex items-center justify-between">
+      <div>
+        <div class="text-xs text-slate-500">Valor Fechado (R$)</div>
+        <div class="text-xl font-bold text-green-700" id="d-val-fechado">0</div>
+      </div>
+      <svg class="w-8 h-8 text-green-200" fill="currentColor" viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/></svg>
+    </div>
+    <div class="metric-card">
+      <div class="text-xs text-slate-500 mb-1">Clientes por Segmento</div>
+      <div id="d-segmentos" class="flex flex-wrap gap-1 overflow-hidden" style="max-height:46px"></div>
+    </div>
+    <div class="metric-card">
+      <div class="text-xs text-slate-500 mb-1">Produtos Mais Usados</div>
+      <div id="d-top-produtos" class="text-xs text-slate-700 leading-relaxed overflow-hidden" style="max-height:46px"></div>
+    </div>
+  </div>
+  <!-- Row 3: lists -->
+  <div class="grid grid-cols-2 gap-2 flex-1 min-h-0">
+    <div class="bg-white rounded-lg border border-slate-200 flex flex-col overflow-hidden">
+      <div class="px-3 py-2 border-b border-slate-100 text-xs font-semibold text-slate-600">Últimos Contatos</div>
+      <div id="d-ultimos-contatos" class="flex-1 overflow-y-auto divide-y divide-slate-50 text-xs"></div>
+    </div>
+    <div class="bg-white rounded-lg border border-slate-200 flex flex-col overflow-hidden">
+      <div class="px-3 py-2 border-b border-slate-100 text-xs font-semibold text-slate-600">Próximas Ações</div>
+      <div id="d-proximas-acoes" class="flex-1 overflow-y-auto divide-y divide-slate-50 text-xs"></div>
+    </div>
+  </div>
+</div>
+
+<!-- ===== CLIENTES ===== -->
+<div id="tab-clientes" class="h-full hidden flex flex-col">
+  <div class="flex items-center gap-2 px-3 py-2 border-b border-slate-200 bg-white flex-shrink-0">
+    <input id="cli-search" type="text" placeholder="Buscar por nome ou CNPJ..." class="form-input" style="max-width:240px" oninput="renderClientes()"/>
+    <select id="cli-filter-stage" class="form-input" style="max-width:160px" onchange="renderClientes()">
+      <option value="">Todas etapas</option>
+    </select>
+    <select id="cli-filter-seg" class="form-input" style="max-width:140px" onchange="renderClientes()">
+      <option value="">Todos segmentos</option>
+    </select>
+    <button class="btn-primary ml-auto" onclick="openClienteModal(null)">+ Novo Cliente</button>
+  </div>
+  <div class="flex flex-1 min-h-0">
+    <!-- Table -->
+    <div class="flex-1 overflow-auto">
+      <table class="w-full text-xs">
+        <thead class="bg-slate-50 sticky top-0 z-10">
+          <tr class="text-left text-slate-500">
+            <th class="px-3 py-2 font-semibold">Nome Fantasia</th>
+            <th class="px-3 py-2 font-semibold">CNPJ</th>
+            <th class="px-3 py-2 font-semibold">Segmento</th>
+            <th class="px-3 py-2 font-semibold">UF</th>
+            <th class="px-3 py-2 font-semibold">Contato</th>
+            <th class="px-3 py-2 font-semibold">Etapa</th>
+            <th class="px-3 py-2 font-semibold">Últ. Contato</th>
+            <th class="px-3 py-2 font-semibold">Próx. Ação</th>
+            <th class="px-3 py-2 font-semibold">Ações</th>
+          </tr>
+        </thead>
+        <tbody id="clientes-tbody"></tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<!-- ===== PRODUTOS ===== -->
+<div id="tab-produtos" class="h-full hidden flex flex-col">
+  <div class="flex items-center gap-2 px-3 py-2 border-b border-slate-200 bg-white flex-shrink-0">
+    <input id="prod-search" type="text" placeholder="Buscar produto..." class="form-input" style="max-width:260px" oninput="renderProdutos()"/>
+    <select id="prod-filter" class="form-input" style="max-width:140px" onchange="renderProdutos()">
+      <option value="">Todos</option>
+      <option value="ativo">Ativos</option>
+      <option value="inativo">Inativos</option>
+    </select>
+    <button class="btn-primary ml-auto" onclick="openProdutoModal(null)">+ Novo Produto</button>
+  </div>
+  <div class="flex-1 overflow-auto">
+    <table class="w-full text-xs">
+      <thead class="bg-slate-50 sticky top-0 z-10">
+        <tr class="text-left text-slate-500">
+          <th class="px-3 py-2 font-semibold">Nome do Produto</th>
+          <th class="px-3 py-2 font-semibold">Valor (R$)</th>
+          <th class="px-3 py-2 font-semibold">Descrição</th>
+          <th class="px-3 py-2 font-semibold">Status</th>
+          <th class="px-3 py-2 font-semibold">Ações</th>
+        </tr>
+      </thead>
+      <tbody id="produtos-tbody"></tbody>
+    </table>
+  </div>
+</div>
+
+<!-- ===== FUNIL (KANBAN) ===== -->
+<div id="tab-funil" class="h-full hidden flex flex-col">
+  <div class="flex items-center gap-2 px-3 py-2 border-b border-slate-200 bg-white flex-shrink-0">
+    <span class="text-xs font-semibold text-slate-600">Funil de Vendas</span>
+    <input id="funil-search" type="text" placeholder="Buscar cliente..." class="form-input ml-4" style="max-width:200px" oninput="renderKanban()"/>
+    <button class="btn-primary ml-auto" onclick="openClienteModal(null)">+ Novo Lead</button>
+  </div>
+  <div class="flex-1 overflow-x-auto overflow-y-hidden p-3">
+    <div id="kanban-board" class="flex gap-3 h-full"></div>
+  </div>
+</div>
+
+<!-- ===== PROPOSTAS ===== -->
+<div id="tab-propostas" class="h-full hidden flex flex-col">
+  <div class="flex items-center gap-2 px-3 py-2 border-b border-slate-200 bg-white flex-shrink-0">
+    <span class="text-xs font-semibold text-slate-600">Propostas / Planos</span>
+    <select id="prop-filter-stage" class="form-input ml-4" style="max-width:160px" onchange="renderPropostas()">
+      <option value="">Todas etapas</option>
+    </select>
+    <select id="prop-filter-aprov" class="form-input" style="max-width:180px" onchange="renderPropostas()">
+      <option value="">Todos status desconto</option>
+      <option value="pendente">Aguardando Aprovação</option>
+      <option value="aprovado">Aprovado</option>
+      <option value="reprovado">Reprovado</option>
+      <option value="na">Sem desconto especial</option>
+    </select>
+    <button class="btn-primary ml-auto" onclick="openPropostaModal(null)">+ Nova Proposta</button>
+  </div>
+  <div class="flex-1 overflow-auto">
+    <table class="w-full text-xs">
+      <thead class="bg-slate-50 sticky top-0 z-10">
+        <tr class="text-left text-slate-500">
+          <th class="px-3 py-2 font-semibold">Cliente</th>
+          <th class="px-3 py-2 font-semibold">Etapa</th>
+          <th class="px-3 py-2 font-semibold">Produtos</th>
+          <th class="px-3 py-2 font-semibold">Mensalidade (R$)</th>
+          <th class="px-3 py-2 font-semibold">Desconto</th>
+          <th class="px-3 py-2 font-semibold">Aprovação</th>
+          <th class="px-3 py-2 font-semibold">Criada em</th>
+          <th class="px-3 py-2 font-semibold">Observações</th>
+          <th class="px-3 py-2 font-semibold">Ações</th>
+        </tr>
+      </thead>
+      <tbody id="propostas-tbody"></tbody>
+    </table>
+  </div>
+</div>
+
+</main>
+
+<!-- ===== MODAL CLIENTE ===== -->
+<div id="modal-cliente" class="overlay hidden" onclick="if(event.target===this)closeModal('modal-cliente')">
+  <div class="modal p-0">
+    <div class="flex items-center justify-between px-5 py-3 border-b border-slate-100">
+      <span class="font-bold text-slate-700" id="modal-cli-title">Novo Cliente</span>
+      <button onclick="closeModal('modal-cliente')" class="text-slate-400 hover:text-slate-600 text-lg font-bold">&times;</button>
+    </div>
+    <div class="p-4">
+      <input type="hidden" id="cli-id"/>
+      <div class="grid grid-cols-3 gap-3">
+        <div><label>Nome Fantasia *</label><input id="cli-nome" class="form-input mt-1" placeholder="Ex: Empresa ABC"/></div>
+        <div><label>CNPJ</label><input id="cli-cnpj" class="form-input mt-1" placeholder="00.000.000/0001-00" oninput="maskCNPJ(this)"/></div>
+        <div><label>Segmento</label>
+          <select id="cli-segmento" class="form-input mt-1">
+            <option value="">Selecione</option>
+            <option>Varejo</option><option>Atacado</option><option>Indústria</option>
+            <option>Serviços</option><option>Imobiliário</option><option>Financeiro</option>
+            <option>Saúde</option><option>Educação</option><option>Logística</option>
+            <option>Tecnologia</option><option>Agronegócio</option><option>Construção Civil</option><option>Outros</option>
+          </select>
+        </div>
+        <div class="col-span-2"><label>Endereço</label><input id="cli-endereco" class="form-input mt-1" placeholder="Rua, número, bairro, cidade"/></div>
+        <div><label>UF</label>
+          <select id="cli-uf" class="form-input mt-1">
+            <option value="">UF</option>
+            <option>AC</option><option>AL</option><option>AP</option><option>AM</option><option>BA</option>
+            <option>CE</option><option>DF</option><option>ES</option><option>GO</option><option>MA</option>
+            <option>MT</option><option>MS</option><option>MG</option><option>PA</option><option>PB</option>
+            <option>PR</option><option>PE</option><option>PI</option><option>RJ</option><option>RN</option>
+            <option>RS</option><option>RO</option><option>RR</option><option>SC</option><option>SP</option>
+            <option>SE</option><option>TO</option>
+          </select>
+        </div>
+        <div><label>Tíquete Médio (R$)</label><input id="cli-tiquete" type="number" class="form-input mt-1" placeholder="0,00"/></div>
+        <div><label>Nome do Contato</label><input id="cli-contato-nome" class="form-input mt-1" placeholder="João Silva"/></div>
+        <div><label>Cargo do Contato</label><input id="cli-contato-cargo" class="form-input mt-1" placeholder="Gerente"/></div>
+        <div><label>Telefone</label><input id="cli-telefone" class="form-input mt-1" placeholder="(11) 99999-9999" oninput="maskPhone(this)"/></div>
+        <div><label>Status no Funil</label>
+          <select id="cli-etapa" class="form-input mt-1" onchange="updateEtapaColor(this)">
+            <option value="0">Contato Inicial</option>
+            <option value="1">Em Atendimento</option>
+            <option value="2">Proposta Enviada</option>
+            <option value="3">Em Negociação</option>
+            <option value="4">Fechado</option>
+            <option value="5">Perdido</option>
+            <option value="6">Pós-venda/Implantação</option>
+          </select>
+        </div>
+        <div><label>Data Últ. Contato</label><input id="cli-data-contato" type="date" class="form-input mt-1"/></div>
+        <div><label>Próxima Ação</label><input id="cli-proxima-acao" class="form-input mt-1" placeholder="Enviar proposta..."/></div>
+        <div class="col-span-3"><label>Histórico da Conversa</label><textarea id="cli-historico" rows="2" class="form-input mt-1 resize-none" placeholder="Registre aqui o histórico..."></textarea></div>
+        <div class="col-span-3"><label>Observações</label><textarea id="cli-obs" rows="2" class="form-input mt-1 resize-none" placeholder="Observações gerais..."></textarea></div>
+      </div>
+    </div>
+    <div class="flex justify-between items-center px-5 py-3 border-t border-slate-100 bg-slate-50">
+      <button id="btn-delete-cli" class="btn-danger hidden" onclick="deleteCliente()">Excluir</button>
+      <div class="flex gap-2 ml-auto">
+        <button class="btn-ghost" onclick="closeModal('modal-cliente')">Cancelar</button>
+        <button class="btn-primary" onclick="saveCliente()">Salvar</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ===== MODAL PRODUTO ===== -->
+<div id="modal-produto" class="overlay hidden" onclick="if(event.target===this)closeModal('modal-produto')">
+  <div class="modal modal-sm p-0">
+    <div class="flex items-center justify-between px-5 py-3 border-b border-slate-100">
+      <span class="font-bold text-slate-700" id="modal-prod-title">Novo Produto</span>
+      <button onclick="closeModal('modal-produto')" class="text-slate-400 hover:text-slate-600 text-lg font-bold">&times;</button>
+    </div>
+    <div class="p-4 grid gap-3">
+      <input type="hidden" id="prod-id"/>
+      <div><label>Nome do Produto *</label><input id="prod-nome" class="form-input mt-1"/></div>
+      <div><label>Valor (R$)</label><input id="prod-valor" type="number" class="form-input mt-1" placeholder="0,00"/></div>
+      <div><label>Descrição Curta</label><textarea id="prod-descricao" rows="2" class="form-input mt-1 resize-none"></textarea></div>
+      <div><label>Status</label>
+        <select id="prod-status" class="form-input mt-1">
+          <option value="ativo">Ativo</option>
+          <option value="inativo">Inativo</option>
+        </select>
+      </div>
+    </div>
+    <div class="flex justify-between items-center px-5 py-3 border-t border-slate-100 bg-slate-50">
+      <button id="btn-delete-prod" class="btn-danger hidden" onclick="deleteProduto()">Excluir</button>
+      <div class="flex gap-2 ml-auto">
+        <button class="btn-ghost" onclick="closeModal('modal-produto')">Cancelar</button>
+        <button class="btn-primary" onclick="saveProduto()">Salvar</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ===== MODAL PROPOSTA ===== -->
+<div id="modal-proposta" class="overlay hidden" onclick="if(event.target===this)closeModal('modal-proposta')">
+  <div class="modal p-0" style="max-width:760px">
+    <div class="flex items-center justify-between px-5 py-3 border-b border-slate-100">
+      <span class="font-bold text-slate-700" id="modal-prop-title">Montar Plano / Proposta</span>
+      <button onclick="closeModal('modal-proposta')" class="text-slate-400 hover:text-slate-600 text-lg font-bold">&times;</button>
+    </div>
+    <div class="p-4 grid grid-cols-2 gap-4">
+      <input type="hidden" id="prop-id"/>
+      <!-- Coluna esquerda -->
+      <div class="flex flex-col gap-3">
+        <div>
+          <label>Cliente *</label>
+          <select id="prop-cliente" class="form-input mt-1"></select>
+        </div>
+        <div>
+          <label>Etapa no Funil</label>
+          <select id="prop-etapa" class="form-input mt-1">
+            <option value="0">Contato Inicial</option>
+            <option value="1">Em Atendimento</option>
+            <option value="2">Proposta Enviada</option>
+            <option value="3">Em Negociação</option>
+            <option value="4">Fechado</option>
+            <option value="5">Perdido</option>
+            <option value="6">Pós-venda/Implantação</option>
+          </select>
+        </div>
+        <div>
+          <label>Produtos Selecionados</label>
+          <div id="prop-produtos-list" class="mt-1 border border-slate-200 rounded-lg overflow-y-auto bg-white" style="max-height:200px"></div>
+        </div>
+      </div>
+      <!-- Coluna direita -->
+      <div class="flex flex-col gap-3">
+        <div class="bg-slate-50 rounded-lg p-3 border border-slate-200">
+          <div class="flex justify-between text-xs mb-1"><span class="text-slate-500">Valor Total dos Produtos:</span><span id="prop-total-produtos" class="font-bold">R$ 0,00</span></div>
+          <div class="flex items-center gap-2 mb-2">
+            <div class="flex-1">
+              <label>Mensalidade (R$)</label>
+              <input id="prop-mensalidade" type="number" class="form-input mt-1" placeholder="0,00" oninput="calcDesconto()"/>
+            </div>
+          </div>
+          <div class="flex items-center gap-2 mb-1">
+            <div class="flex-1">
+              <label>Desconto</label>
+              <div class="flex gap-1 mt-1">
+                <input id="prop-desc-valor" type="number" class="form-input" placeholder="R$" oninput="syncDesconto('valor')"/>
+                <input id="prop-desc-perc" type="number" class="form-input" placeholder="%" min="0" max="100" oninput="syncDesconto('perc')"/>
+              </div>
+            </div>
+          </div>
+          <div id="prop-desconto-info" class="text-xs mt-1 hidden rounded px-2 py-1"></div>
+          <div id="prop-aprovacao-area" class="hidden mt-2">
+            <div class="text-xs font-semibold text-orange-700 mb-1">Desconto &gt; 10% — Requer Autorização</div>
+            <select id="prop-aprovacao" class="form-input" onchange="checkAprovacao()">
+              <option value="pendente">Aguardando Aprovação</option>
+              <option value="aprovado">Aprovado pela Gestão</option>
+              <option value="reprovado">Reprovado</option>
+            </select>
+            <input id="prop-aprovador" class="form-input mt-1" placeholder="Nome do aprovador"/>
+          </div>
+        </div>
+        <div>
+          <label>Observações da Proposta</label>
+          <textarea id="prop-obs" rows="3" class="form-input mt-1 resize-none" placeholder="Condições especiais, validade da proposta..."></textarea>
+        </div>
+      </div>
+    </div>
+    <div class="flex justify-between items-center px-5 py-3 border-t border-slate-100 bg-slate-50">
+      <button id="btn-delete-prop" class="btn-danger hidden" onclick="deleteProposta()">Excluir</button>
+      <div class="flex gap-2 ml-auto">
+        <button class="btn-ghost" onclick="closeModal('modal-proposta')">Cancelar</button>
+        <button class="btn-primary" onclick="saveProposta()">Salvar Proposta</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+// ============================================================
+// API – GOOGLE SHEETS
+// ============================================================
+function getApiUrl(){return localStorage.getItem('cc_api_url')||'';}
+
+function setSyncStatus(status,label){
+  const dot=document.getElementById('sync-dot');
+  const lbl=document.getElementById('sync-label');
+  dot.className='sync-dot sync-'+status;
+  lbl.textContent=label;
+}
+
+async function apiGet(){
+  const url=getApiUrl();
+  if(!url) return null;
+  setSyncStatus('ing','Sincronizando...');
+  return new Promise((resolve)=>{
+    const cbName='cc_cb_'+Date.now();
+    const script=document.createElement('script');
+    const timer=setTimeout(()=>{
+      cleanup();setSyncStatus('err','Timeout na conexão');resolve(null);
+    },15000);
+    function cleanup(){
+      delete window[cbName];
+      if(script.parentNode) script.parentNode.removeChild(script);
+      clearTimeout(timer);
+    }
+    window[cbName]=function(data){
+      cleanup();
+      if(data && data.error){setSyncStatus('err','Erro: '+data.error);resolve(null);return;}
+      setSyncStatus('ok','Sincronizado');
+      resolve(data);
+    };
+    script.onerror=()=>{cleanup();setSyncStatus('err','Erro na conexão');resolve(null);};
+    script.src=url+'?callback='+cbName+'&t='+Date.now();
+    document.head.appendChild(script);
+  });
+}
+
+async function apiPost(body){
+  const url=getApiUrl();
+  if(!url) return false;
+  setSyncStatus('ing','Sincronizando...');
+  try{
+    await fetch(url,{method:'POST',mode:'no-cors',body:JSON.stringify(body),headers:{'Content-Type':'text/plain'}});
+    setSyncStatus('ok','Sincronizado');
+    return true;
+  }catch(e){
+    setSyncStatus('err','Erro ao salvar');
+    console.error('apiPost error:',e);
+    return false;
+  }
+}
+
+async function syncFromSheets(){
+  const data=await apiGet();
+  if(!data) return;
+  if(data.clientes && data.clientes.length) state.clientes=data.clientes;
+  if(data.produtos && data.produtos.length) state.produtos=data.produtos;
+  if(data.propostas) state.propostas=data.propostas;
+  saveState();
+}
+
+async function pushRecord(sheet,record){
+  return apiPost({action:'save',sheet,record});
+}
+async function deleteRecord(sheet,id){
+  return apiPost({action:'delete',sheet,record:{id}});
+}
+
+function openConfigModal(){
+  document.getElementById('config-api-url').value=getApiUrl();
+  document.getElementById('config-test-result').classList.add('hidden');
+  openModal('modal-config');
+}
+function saveApiConfig(){
+  const url=document.getElementById('config-api-url').value.trim();
+  localStorage.setItem('cc_api_url',url);
+  closeModal('modal-config');
+  if(url){setSyncStatus('off','Conectando...');syncFromSheets().then(()=>{renderDashboard();renderClientes();renderProdutos();});}
+  else setSyncStatus('off','Sem sincronização');
+}
+function clearApiConfig(){
+  localStorage.removeItem('cc_api_url');
+  document.getElementById('config-api-url').value='';
+  setSyncStatus('off','Sem sincronização');
+  closeModal('modal-config');
+}
+async function testApiConnection(){
+  const url=document.getElementById('config-api-url').value.trim();
+  if(!url){alert('Insira a URL primeiro.');return;}
+  const el=document.getElementById('config-test-result');
+  el.className='text-xs rounded px-3 py-2 bg-amber-50 border border-amber-200 text-amber-700';
+  el.textContent='Testando...';
+  el.classList.remove('hidden');
+  const cbName='cc_test_'+Date.now();
+  const script=document.createElement('script');
+  const timer=setTimeout(()=>{
+    delete window[cbName];
+    if(script.parentNode) script.parentNode.removeChild(script);
+    el.className='text-xs rounded px-3 py-2 bg-red-50 border border-red-200 text-red-700';
+    el.textContent='Erro: timeout — verifique a URL e se o deploy está publicado corretamente.';
+  },15000);
+  window[cbName]=function(data){
+    clearTimeout(timer);
+    delete window[cbName];
+    if(script.parentNode) script.parentNode.removeChild(script);
+    if(data && data.error){
+      el.className='text-xs rounded px-3 py-2 bg-red-50 border border-red-200 text-red-700';
+      el.textContent='Erro do servidor: '+data.error;
+    } else {
+      el.className='text-xs rounded px-3 py-2 bg-green-50 border border-green-200 text-green-700';
+      el.textContent='Conexão bem-sucedida! Planilha encontrada.';
+    }
+  };
+  script.onerror=()=>{
+    clearTimeout(timer);
+    delete window[cbName];
+    el.className='text-xs rounded px-3 py-2 bg-red-50 border border-red-200 text-red-700';
+    el.textContent='Erro: não foi possível conectar. Verifique a URL.';
+  };
+  script.src=url+'?callback='+cbName+'&t='+Date.now();
+  document.head.appendChild(script);
+}
+
+// ============================================================
+// STATE & STORAGE
+// ============================================================
+const STAGES = ['Contato Inicial','Em Atendimento','Proposta Enviada','Em Negociação','Fechado','Perdido','Pós-venda/Implantação'];
+const STAGE_COLORS = ['stage-0','stage-1','stage-2','stage-3','stage-4','stage-5','stage-6'];
+
+const DEFAULT_PRODUCTS = [
+  {nome:'Relatório Serasa Completo com Score',valor:0,descricao:'Relatório completo com análise de crédito e score Serasa.',status:'ativo'},
+  {nome:'Consulta Serasa Top',valor:0,descricao:'Consulta completa Serasa Top.',status:'ativo'},
+  {nome:'Relatório Pré-locação/Aluguel, Pré-matrícula, Pré-admissão com Serasa',valor:0,descricao:'Relatório para análise prévia em processos de locação, matrícula ou admissão.',status:'ativo'},
+  {nome:'Score Serasa com Cadastro Positivo',valor:0,descricao:'Score com informações do Cadastro Positivo.',status:'ativo'},
+  {nome:'Localizador Nacional CPF',valor:0,descricao:'Localização de pessoa física em âmbito nacional.',status:'ativo'},
+  {nome:'Localizador Nacional CNPJ',valor:0,descricao:'Localização de pessoa jurídica em âmbito nacional.',status:'ativo'},
+  {nome:'Dados Cadastrais Complementares',valor:0,descricao:'Informações cadastrais adicionais de CPF ou CNPJ.',status:'ativo'},
+  {nome:'Localizador Nacional Completo CPF/CNPJ',valor:0,descricao:'Localizador completo para pessoa física e jurídica.',status:'ativo'},
+  {nome:'Relatório de Processos Judiciais e Criminais',valor:0,descricao:'Relatório de processos judiciais e registros criminais.',status:'ativo'},
+  {nome:'Relatório Detalhado de Processos Judiciais e Criminais',valor:0,descricao:'Versão detalhada com histórico completo.',status:'ativo'},
+  {nome:'Relatório Cadin Detalhado',valor:0,descricao:'Relatório do Cadastro Informativo de créditos não quitados do setor público federal.',status:'ativo'},
+  {nome:'Consulta de Mandado de Prisão',valor:0,descricao:'Verificação de mandados de prisão ativos.',status:'ativo'},
+  {nome:'Negativação Serasa Experian',valor:0,descricao:'Serviço de negativação de devedores na Serasa Experian.',status:'ativo'},
+  {nome:'Manutenção PEFIN',valor:0,descricao:'Manutenção do Cadastro de Pendências Financeiras.',status:'ativo'},
+  {nome:'Preenchimento Automático para Negativação de Devedores',valor:0,descricao:'Automação do processo de negativação.',status:'ativo'},
+  {nome:'Consulta Veicular Diamond',valor:0,descricao:'Consulta veicular completa categoria Diamond.',status:'ativo'},
+  {nome:'Consulta Veicular por Placa/Documento',valor:0,descricao:'Consulta de veículo por placa ou documento do proprietário.',status:'ativo'},
+  {nome:'Serasa Antifraude (Me Proteja)',valor:0,descricao:'Monitoramento e proteção contra fraude de identidade.',status:'ativo'},
+];
+
+function loadState(){
+  let s = {clientes:[],produtos:[],propostas:[]};
+  try{
+    const stored = localStorage.getItem('cc_funil');
+    if(stored) s = JSON.parse(stored);
+    if(!s.produtos || s.produtos.length===0){
+      s.produtos = DEFAULT_PRODUCTS.map((p,i)=>({...p,id:uid()}));
+    }
+  }catch(e){
+    s.produtos = DEFAULT_PRODUCTS.map(p=>({...p,id:uid()}));
+  }
+  return s;
+}
+function saveState(){localStorage.setItem('cc_funil',JSON.stringify(state));}
+function uid(){return Date.now().toString(36)+Math.random().toString(36).slice(2);}
+
+let state = loadState();
+
+// ============================================================
+// TABS
+// ============================================================
+function switchTab(name){
+  ['dashboard','clientes','produtos','funil','propostas'].forEach(t=>{
+    document.getElementById('tab-'+t).classList.add('hidden');
+    document.getElementById('tab-'+t).classList.remove('flex');
+  });
+  document.querySelectorAll('.tab-btn').forEach(b=>b.classList.remove('active'));
+  const el = document.getElementById('tab-'+name);
+  el.classList.remove('hidden');
+  if(['clientes','funil','propostas'].includes(name)) el.classList.add('flex');
+  event.currentTarget.classList.add('active');
+  if(name==='dashboard') renderDashboard();
+  if(name==='clientes') renderClientes();
+  if(name==='produtos') renderProdutos();
+  if(name==='funil') renderKanban();
+  if(name==='propostas') renderPropostas();
+}
+
+// ============================================================
+// UTILS
+// ============================================================
+function fmtMoney(v){
+  v=parseFloat(v)||0;
+  return v.toLocaleString('pt-BR',{minimumFractionDigits:2,maximumFractionDigits:2});
+}
+function stageBadge(idx){
+  return `<span class="badge ${STAGE_COLORS[idx]}">${STAGES[idx]||'-'}</span>`;
+}
+function maskCNPJ(el){
+  let v=el.value.replace(/\D/g,'');
+  v=v.replace(/^(\d{2})(\d)/,'$1.$2');
+  v=v.replace(/^(\d{2})\.(\d{3})(\d)/,'$1.$2.$3');
+  v=v.replace(/\.(\d{3})(\d)/,'.$1/$2');
+  v=v.replace(/(\d{4})(\d)/,'$1-$2');
+  el.value=v.slice(0,18);
+}
+function maskPhone(el){
+  let v=el.value.replace(/\D/g,'');
+  if(v.length<=10) v=v.replace(/(\d{2})(\d{4})(\d{0,4})/,'($1) $2-$3');
+  else v=v.replace(/(\d{2})(\d{5})(\d{0,4})/,'($1) $2-$3');
+  el.value=v.slice(0,15);
+}
+function todayStr(){return new Date().toISOString().slice(0,10);}
+function fmtDate(d){if(!d)return'-';const p=d.split('-');return p[2]+'/'+p[1]+'/'+p[0];}
+function closeModal(id){document.getElementById(id).classList.add('hidden');}
+function openModal(id){document.getElementById(id).classList.remove('hidden');}
+
+// ============================================================
+// DASHBOARD
+// ============================================================
+function renderDashboard(){
+  const clientes = state.clientes;
+  const propostas = state.propostas;
+  document.getElementById('d-total-leads').textContent = clientes.filter(c=>![4,5].includes(parseInt(c.etapa))).length;
+  document.getElementById('d-propostas').textContent = clientes.filter(c=>parseInt(c.etapa)===2).length;
+  document.getElementById('d-fechados').textContent = clientes.filter(c=>parseInt(c.etapa)===4).length;
+  document.getElementById('d-perdidos').textContent = clientes.filter(c=>parseInt(c.etapa)===5).length;
+
+  const propNegoc = propostas.filter(p=>[1,2,3].includes(parseInt(p.etapa)));
+  const propFech = propostas.filter(p=>parseInt(p.etapa)===4);
+  document.getElementById('d-val-negoc').textContent = 'R$ '+fmtMoney(propNegoc.reduce((s,p)=>s+(parseFloat(p.mensalidade)||0),0));
+  document.getElementById('d-val-fechado').textContent = 'R$ '+fmtMoney(propFech.reduce((s,p)=>s+(parseFloat(p.mensalidade)||0),0));
+
+  // Segmentos
+  const segs={};
+  clientes.forEach(c=>{if(c.segmento){segs[c.segmento]=(segs[c.segmento]||0)+1;}});
+  const segEl=document.getElementById('d-segmentos');
+  segEl.innerHTML=Object.entries(segs).sort((a,b)=>b[1]-a[1]).slice(0,6).map(([k,v])=>`<span class="badge bg-blue-100 text-blue-700">${k}: ${v}</span>`).join('');
+  if(!Object.keys(segs).length) segEl.innerHTML='<span class="text-slate-400 text-xs">Sem dados</span>';
+
+  // Top produtos
+  const prodCount={};
+  propostas.forEach(p=>{(p.produtos||[]).forEach(pid=>{prodCount[pid]=(prodCount[pid]||0)+1;});});
+  const topProd=Object.entries(prodCount).sort((a,b)=>b[1]-a[1]).slice(0,3);
+  document.getElementById('d-top-produtos').innerHTML=topProd.map(([pid,cnt])=>{
+    const prod=state.produtos.find(p=>p.id===pid);
+    return prod?`<div class="truncate">${cnt}x ${prod.nome}</div>`:'';
+  }).join('')||'<span class="text-slate-400">Sem dados</span>';
+
+  // Últimos contatos
+  const sorted=[...clientes].filter(c=>c.dataContato).sort((a,b)=>b.dataContato.localeCompare(a.dataContato)).slice(0,10);
+  document.getElementById('d-ultimos-contatos').innerHTML=sorted.length?sorted.map(c=>`
+    <div class="flex items-center justify-between px-3 py-2 row-hover">
+      <div>
+        <div class="font-medium text-slate-700">${c.nome}</div>
+        <div class="text-slate-400">${c.contatoNome||'-'} · ${c.segmento||'-'}</div>
+      </div>
+      <div class="text-right flex-shrink-0">
+        ${stageBadge(parseInt(c.etapa)||0)}
+        <div class="text-slate-400 mt-0.5">${fmtDate(c.dataContato)}</div>
+      </div>
+    </div>
+  `).join(''):'<div class="p-3 text-slate-400">Nenhum contato registrado.</div>';
+
+  // Próximas ações
+  const acoes=[...clientes].filter(c=>c.proximaAcao).slice(0,10);
+  document.getElementById('d-proximas-acoes').innerHTML=acoes.length?acoes.map(c=>`
+    <div class="flex items-center justify-between px-3 py-2 row-hover">
+      <div>
+        <div class="font-medium text-slate-700">${c.nome}</div>
+        <div class="text-slate-400">${c.proximaAcao}</div>
+      </div>
+      ${stageBadge(parseInt(c.etapa)||0)}
+    </div>
+  `).join(''):'<div class="p-3 text-slate-400">Nenhuma ação pendente.</div>';
+}
+
+// ============================================================
+// CLIENTES
+// ============================================================
+function populateStageFilters(){
+  ['cli-filter-stage','prop-filter-stage'].forEach(id=>{
+    const el=document.getElementById(id);
+    if(!el) return;
+    const cur=el.value;
+    el.innerHTML='<option value="">Todas etapas</option>'+STAGES.map((s,i)=>`<option value="${i}">${s}</option>`).join('');
+    el.value=cur;
+  });
+  const segEl=document.getElementById('cli-filter-seg');
+  if(segEl){
+    const segs=[...new Set(state.clientes.map(c=>c.segmento).filter(Boolean))];
+    segEl.innerHTML='<option value="">Todos segmentos</option>'+segs.map(s=>`<option>${s}</option>`).join('');
+  }
+}
+
+function renderClientes(){
+  populateStageFilters();
+  const search=(document.getElementById('cli-search').value||'').toLowerCase();
+  const filterStage=document.getElementById('cli-filter-stage').value;
+  const filterSeg=document.getElementById('cli-filter-seg').value;
+  let list=state.clientes.filter(c=>{
+    if(search && !c.nome.toLowerCase().includes(search) && !(c.cnpj||'').includes(search)) return false;
+    if(filterStage!=='' && String(c.etapa)!==filterStage) return false;
+    if(filterSeg && c.segmento!==filterSeg) return false;
+    return true;
+  });
+  const tbody=document.getElementById('clientes-tbody');
+  tbody.innerHTML=list.length?list.map(c=>`
+    <tr class="border-b border-slate-100 row-hover">
+      <td class="px-3 py-2 font-medium text-slate-800">${c.nome}</td>
+      <td class="px-3 py-2 text-slate-500">${c.cnpj||'-'}</td>
+      <td class="px-3 py-2">${c.segmento||'-'}</td>
+      <td class="px-3 py-2">${c.uf||'-'}</td>
+      <td class="px-3 py-2">${c.contatoNome||'-'}<br><span class="text-slate-400">${c.telefone||''}</span></td>
+      <td class="px-3 py-2">${stageBadge(parseInt(c.etapa)||0)}</td>
+      <td class="px-3 py-2 text-slate-500">${fmtDate(c.dataContato)}</td>
+      <td class="px-3 py-2 text-slate-600 max-w-xs truncate">${c.proximaAcao||'-'}</td>
+      <td class="px-3 py-2">
+        <div class="flex gap-1">
+          <button class="btn-ghost text-xs py-1 px-2" onclick="openClienteModal('${c.id}')">Editar</button>
+          <button class="btn-ghost text-xs py-1 px-2 text-blue-600" onclick="openPropostaModal(null,'${c.id}')">Proposta</button>
+        </div>
+      </td>
+    </tr>
+  `).join(''):`<tr><td colspan="9" class="px-3 py-6 text-center text-slate-400 text-sm">Nenhum cliente encontrado.</td></tr>`;
+}
+
+function openClienteModal(id){
+  const isNew=!id;
+  document.getElementById('modal-cli-title').textContent=isNew?'Novo Cliente':'Editar Cliente';
+  document.getElementById('btn-delete-cli').classList.toggle('hidden',isNew);
+  const fields=['id','nome','cnpj','segmento','endereco','uf','tiquete','contato-nome','contato-cargo','telefone','etapa','data-contato','proxima-acao','historico','obs'];
+  fields.forEach(f=>{ const el=document.getElementById('cli-'+f); if(el) el.value=''; });
+  if(!isNew){
+    const c=state.clientes.find(x=>x.id===id);
+    if(!c) return;
+    document.getElementById('cli-id').value=c.id;
+    document.getElementById('cli-nome').value=c.nome||'';
+    document.getElementById('cli-cnpj').value=c.cnpj||'';
+    document.getElementById('cli-segmento').value=c.segmento||'';
+    document.getElementById('cli-endereco').value=c.endereco||'';
+    document.getElementById('cli-uf').value=c.uf||'';
+    document.getElementById('cli-tiquete').value=c.tiquete||'';
+    document.getElementById('cli-contato-nome').value=c.contatoNome||'';
+    document.getElementById('cli-contato-cargo').value=c.contatoCargo||'';
+    document.getElementById('cli-telefone').value=c.telefone||'';
+    document.getElementById('cli-etapa').value=c.etapa||'0';
+    document.getElementById('cli-data-contato').value=c.dataContato||'';
+    document.getElementById('cli-proxima-acao').value=c.proximaAcao||'';
+    document.getElementById('cli-historico').value=c.historico||'';
+    document.getElementById('cli-obs').value=c.obs||'';
+  } else {
+    document.getElementById('cli-data-contato').value=todayStr();
+  }
+  openModal('modal-cliente');
+}
+
+function saveCliente(){
+  const nome=document.getElementById('cli-nome').value.trim();
+  if(!nome){alert('Nome Fantasia é obrigatório.');return;}
+  const id=document.getElementById('cli-id').value||uid();
+  const obj={
+    id, nome,
+    cnpj:document.getElementById('cli-cnpj').value,
+    segmento:document.getElementById('cli-segmento').value,
+    endereco:document.getElementById('cli-endereco').value,
+    uf:document.getElementById('cli-uf').value,
+    tiquete:document.getElementById('cli-tiquete').value,
+    contatoNome:document.getElementById('cli-contato-nome').value,
+    contatoCargo:document.getElementById('cli-contato-cargo').value,
+    telefone:document.getElementById('cli-telefone').value,
+    etapa:document.getElementById('cli-etapa').value||'0',
+    dataContato:document.getElementById('cli-data-contato').value,
+    proximaAcao:document.getElementById('cli-proxima-acao').value,
+    historico:document.getElementById('cli-historico').value,
+    obs:document.getElementById('cli-obs').value,
+  };
+  const idx=state.clientes.findIndex(c=>c.id===id);
+  if(idx>=0) state.clientes[idx]=obj; else state.clientes.unshift(obj);
+  saveState();
+  pushRecord('Clientes',obj);
+  closeModal('modal-cliente');
+  renderClientes();
+  renderKanban();
+}
+
+function deleteCliente(){
+  if(!confirm('Excluir este cliente?')) return;
+  const id=document.getElementById('cli-id').value;
+  state.clientes=state.clientes.filter(c=>c.id!==id);
+  saveState();
+  deleteRecord('Clientes',id);
+  closeModal('modal-cliente');
+  renderClientes();
+  renderKanban();
+}
+
+// ============================================================
+// PRODUTOS
+// ============================================================
+function renderProdutos(){
+  const search=(document.getElementById('prod-search').value||'').toLowerCase();
+  const filter=document.getElementById('prod-filter').value;
+  let list=state.produtos.filter(p=>{
+    if(search && !p.nome.toLowerCase().includes(search)) return false;
+    if(filter && p.status!==filter) return false;
+    return true;
+  });
+  const tbody=document.getElementById('produtos-tbody');
+  tbody.innerHTML=list.length?list.map(p=>`
+    <tr class="border-b border-slate-100 row-hover">
+      <td class="px-3 py-2 font-medium text-slate-800">${p.nome}</td>
+      <td class="px-3 py-2 text-slate-700">R$ ${fmtMoney(p.valor)}</td>
+      <td class="px-3 py-2 text-slate-500 max-w-xs truncate">${p.descricao||'-'}</td>
+      <td class="px-3 py-2"><span class="badge ${p.status==='ativo'?'bg-green-100 text-green-700':'bg-red-100 text-red-500'}">${p.status==='ativo'?'Ativo':'Inativo'}</span></td>
+      <td class="px-3 py-2"><button class="btn-ghost text-xs py-1 px-2" onclick="openProdutoModal('${p.id}')">Editar</button></td>
+    </tr>
+  `).join(''):`<tr><td colspan="5" class="px-3 py-6 text-center text-slate-400 text-sm">Nenhum produto encontrado.</td></tr>`;
+}
+
+function openProdutoModal(id){
+  const isNew=!id;
+  document.getElementById('modal-prod-title').textContent=isNew?'Novo Produto':'Editar Produto';
+  document.getElementById('btn-delete-prod').classList.toggle('hidden',isNew);
+  document.getElementById('prod-id').value='';
+  document.getElementById('prod-nome').value='';
+  document.getElementById('prod-valor').value='';
+  document.getElementById('prod-descricao').value='';
+  document.getElementById('prod-status').value='ativo';
+  if(!isNew){
+    const p=state.produtos.find(x=>x.id===id);
+    if(!p) return;
+    document.getElementById('prod-id').value=p.id;
+    document.getElementById('prod-nome').value=p.nome;
+    document.getElementById('prod-valor').value=p.valor;
+    document.getElementById('prod-descricao').value=p.descricao||'';
+    document.getElementById('prod-status').value=p.status;
+  }
+  openModal('modal-produto');
+}
+
+function saveProduto(){
+  const nome=document.getElementById('prod-nome').value.trim();
+  if(!nome){alert('Nome do produto é obrigatório.');return;}
+  const id=document.getElementById('prod-id').value||uid();
+  const obj={id,nome,valor:parseFloat(document.getElementById('prod-valor').value)||0,descricao:document.getElementById('prod-descricao').value,status:document.getElementById('prod-status').value};
+  const idx=state.produtos.findIndex(p=>p.id===id);
+  if(idx>=0) state.produtos[idx]=obj; else state.produtos.unshift(obj);
+  saveState();
+  pushRecord('Produtos',obj);
+  closeModal('modal-produto');
+  renderProdutos();
+}
+
+function deleteProduto(){
+  if(!confirm('Excluir este produto?')) return;
+  const id=document.getElementById('prod-id').value;
+  state.produtos=state.produtos.filter(p=>p.id!==id);
+  saveState();
+  deleteRecord('Produtos',id);
+  closeModal('modal-produto');
+  renderProdutos();
+}
+
+// ============================================================
+// KANBAN
+// ============================================================
+function renderKanban(){
+  const search=(document.getElementById('funil-search').value||'').toLowerCase();
+  const board=document.getElementById('kanban-board');
+  board.innerHTML='';
+  STAGES.forEach((stage,idx)=>{
+    let clientes=state.clientes.filter(c=>parseInt(c.etapa)===idx);
+    if(search) clientes=clientes.filter(c=>c.nome.toLowerCase().includes(search));
+    const col=document.createElement('div');
+    col.className='kanban-col flex flex-col h-full bg-slate-100 rounded-xl overflow-hidden border border-slate-200';
+    col.innerHTML=`
+      <div class="px-3 py-2 flex items-center justify-between flex-shrink-0 bg-white border-b border-slate-200">
+        <span class="text-xs font-bold text-slate-600 truncate">${stage}</span>
+        <span class="badge ${STAGE_COLORS[idx]} ml-1 flex-shrink-0">${clientes.length}</span>
+      </div>
+      <div class="flex-1 overflow-y-auto p-2 flex flex-col gap-2">
+        ${clientes.map(c=>`
+          <div class="kanban-card bg-white rounded-lg p-2.5 border border-slate-200 shadow-sm" onclick="openClienteModal('${c.id}')">
+            <div class="font-semibold text-xs text-slate-800 truncate mb-1">${c.nome}</div>
+            ${c.segmento?`<div class="text-xs text-slate-400">${c.segmento}${c.uf?' · '+c.uf:''}</div>`:''}
+            ${c.contatoNome?`<div class="text-xs text-slate-500 mt-1 truncate">${c.contatoNome}</div>`:''}
+            ${c.proximaAcao?`<div class="text-xs text-blue-600 mt-1 truncate">${c.proximaAcao}</div>`:''}
+            <div class="flex gap-1 mt-2">
+              <button class="text-xs bg-slate-100 hover:bg-blue-100 text-slate-600 hover:text-blue-700 rounded px-1.5 py-0.5" onclick="event.stopPropagation();openPropostaModal(null,'${c.id}')">Proposta</button>
+            </div>
+          </div>
+        `).join('')}
+        ${!clientes.length?'<div class="text-xs text-slate-400 text-center py-3">Vazio</div>':''}
+      </div>
+    `;
+    board.appendChild(col);
+  });
+}
+
+// ============================================================
+// PROPOSTAS
+// ============================================================
+function renderPropostas(){
+  populateStageFilters();
+  const filterStage=document.getElementById('prop-filter-stage').value;
+  const filterAprov=document.getElementById('prop-filter-aprov').value;
+  let list=state.propostas.filter(p=>{
+    if(filterStage!=='' && String(p.etapa)!==filterStage) return false;
+    if(filterAprov){
+      if(filterAprov==='na' && p.aprovacao) return false;
+      if(filterAprov!=='na' && p.aprovacao!==filterAprov) return false;
+    }
+    return true;
+  });
+  const tbody=document.getElementById('propostas-tbody');
+  tbody.innerHTML=list.length?list.map(p=>{
+    const cli=state.clientes.find(c=>c.id===p.clienteId);
+    const prods=(p.produtos||[]).map(pid=>{const pr=state.produtos.find(x=>x.id===pid);return pr?pr.nome:'-';}).join(', ');
+    let aprovBadge='';
+    if(p.aprovacao==='pendente') aprovBadge='<span class="badge approval-pending">Aguardando</span>';
+    else if(p.aprovacao==='aprovado') aprovBadge='<span class="badge approval-ok">Aprovado</span>';
+    else if(p.aprovacao==='reprovado') aprovBadge='<span class="badge approval-rejected">Reprovado</span>';
+    else aprovBadge='<span class="text-slate-400 text-xs">—</span>';
+    return `
+      <tr class="border-b border-slate-100 row-hover">
+        <td class="px-3 py-2 font-medium text-slate-800">${cli?cli.nome:'—'}</td>
+        <td class="px-3 py-2">${stageBadge(parseInt(p.etapa)||0)}</td>
+        <td class="px-3 py-2 text-slate-500 max-w-xs truncate text-xs">${prods||'—'}</td>
+        <td class="px-3 py-2 font-semibold text-slate-800">R$ ${fmtMoney(p.mensalidade)}</td>
+        <td class="px-3 py-2 text-slate-600">${p.descontoPerc?p.descontoPerc+'%':'—'}</td>
+        <td class="px-3 py-2">${aprovBadge}</td>
+        <td class="px-3 py-2 text-slate-400">${fmtDate(p.criadaEm)}</td>
+        <td class="px-3 py-2 text-slate-500 max-w-xs truncate text-xs">${p.obs||'—'}</td>
+        <td class="px-3 py-2">
+          <div class="flex gap-1">
+            <button class="btn-ghost text-xs py-1 px-2" onclick="openPropostaModal('${p.id}')">Editar</button>
+            ${p.aprovacao==='pendente'?`<button class="btn-ghost text-xs py-1 px-2 text-green-600" onclick="aprovarDesconto('${p.id}','aprovado')">Aprovar</button><button class="btn-ghost text-xs py-1 px-2 text-red-600" onclick="aprovarDesconto('${p.id}','reprovado')">Reprovar</button>`:''}
+          </div>
+        </td>
+      </tr>
+    `;
+  }).join(''):`<tr><td colspan="9" class="px-3 py-6 text-center text-slate-400 text-sm">Nenhuma proposta encontrada.</td></tr>`;
+}
+
+function aprovarDesconto(id, status){
+  const p=state.propostas.find(x=>x.id===id);
+  if(p){p.aprovacao=status;saveState();renderPropostas();}
+}
+
+// ============================================================
+// MODAL PROPOSTA
+// ============================================================
+function openPropostaModal(id, preClienteId){
+  const isNew=!id;
+  document.getElementById('modal-prop-title').textContent=isNew?'Nova Proposta':'Editar Proposta';
+  document.getElementById('btn-delete-prop').classList.toggle('hidden',isNew);
+  document.getElementById('prop-id').value='';
+  document.getElementById('prop-mensalidade').value='';
+  document.getElementById('prop-desc-valor').value='';
+  document.getElementById('prop-desc-perc').value='';
+  document.getElementById('prop-obs').value='';
+  document.getElementById('prop-etapa').value='2';
+  document.getElementById('prop-aprovacao').value='pendente';
+  document.getElementById('prop-aprovador').value='';
+  document.getElementById('prop-aprovacao-area').classList.add('hidden');
+  document.getElementById('prop-desconto-info').classList.add('hidden');
+
+  // Populate cliente select
+  const selCli=document.getElementById('prop-cliente');
+  selCli.innerHTML=state.clientes.map(c=>`<option value="${c.id}">${c.nome}</option>`).join('');
+  if(preClienteId) selCli.value=preClienteId;
+
+  // Render product list
+  renderPropProdutos([]);
+
+  document.getElementById('prop-total-produtos').textContent='R$ 0,00';
+
+  if(!isNew){
+    const p=state.propostas.find(x=>x.id===id);
+    if(!p) return;
+    document.getElementById('prop-id').value=p.id;
+    selCli.value=p.clienteId||'';
+    document.getElementById('prop-etapa').value=p.etapa||'2';
+    document.getElementById('prop-mensalidade').value=p.mensalidade||'';
+    document.getElementById('prop-desc-valor').value=p.descontoValor||'';
+    document.getElementById('prop-desc-perc').value=p.descontoPerc||'';
+    document.getElementById('prop-obs').value=p.obs||'';
+    if(p.aprovacao){
+      document.getElementById('prop-aprovacao').value=p.aprovacao;
+      document.getElementById('prop-aprovador').value=p.aprovador||'';
+    }
+    renderPropProdutos(p.produtos||[]);
+    calcTotalProdutos(p.produtos||[]);
+    calcDesconto();
+  }
+
+  openModal('modal-proposta');
+}
+
+function renderPropProdutos(selected){
+  const container=document.getElementById('prop-produtos-list');
+  const ativos=state.produtos.filter(p=>p.status==='ativo');
+  container.innerHTML=ativos.map(p=>`
+    <label class="flex items-center gap-2 px-3 py-1.5 hover:bg-slate-50 cursor-pointer">
+      <input type="checkbox" value="${p.id}" ${selected.includes(p.id)?'checked':''} class="prop-prod-check" onchange="onProdCheck()"/>
+      <span class="text-xs flex-1">${p.nome}</span>
+      <span class="text-xs text-slate-400 flex-shrink-0">R$ ${fmtMoney(p.valor)}</span>
+    </label>
+  `).join('');
+}
+
+function getSelectedProdIds(){
+  return [...document.querySelectorAll('.prop-prod-check:checked')].map(el=>el.value);
+}
+
+function onProdCheck(){
+  const ids=getSelectedProdIds();
+  calcTotalProdutos(ids);
+  calcDesconto();
+}
+
+function calcTotalProdutos(ids){
+  const total=ids.reduce((s,id)=>{const p=state.produtos.find(x=>x.id===id);return s+(p?parseFloat(p.valor)||0:0);},0);
+  document.getElementById('prop-total-produtos').textContent='R$ '+fmtMoney(total);
+}
+
+function syncDesconto(from){
+  const totalEl=document.getElementById('prop-total-produtos').textContent;
+  const total=parseFloat(totalEl.replace('R$','').replace(/\./g,'').replace(',','.'))||0;
+  const mens=parseFloat(document.getElementById('prop-mensalidade').value)||total;
+  if(from==='valor'){
+    const v=parseFloat(document.getElementById('prop-desc-valor').value)||0;
+    const base=total||mens;
+    if(base>0) document.getElementById('prop-desc-perc').value=((v/base)*100).toFixed(2);
+  } else {
+    const pct=parseFloat(document.getElementById('prop-desc-perc').value)||0;
+    const base=total||mens;
+    document.getElementById('prop-desc-valor').value=((pct/100)*base).toFixed(2);
+  }
+  calcDesconto();
+}
+
+function calcDesconto(){
+  const pct=parseFloat(document.getElementById('prop-desc-perc').value)||0;
+  const aprovArea=document.getElementById('prop-aprovacao-area');
+  const infoEl=document.getElementById('prop-desconto-info');
+  if(pct>10){
+    aprovArea.classList.remove('hidden');
+    infoEl.classList.remove('hidden');
+    infoEl.className='text-xs mt-1 rounded px-2 py-1 approval-pending';
+    infoEl.textContent=`Desconto de ${pct.toFixed(1)}% excede 10% — requer aprovação da gestão.`;
+  } else if(pct>0){
+    aprovArea.classList.add('hidden');
+    infoEl.classList.remove('hidden');
+    infoEl.className='text-xs mt-1 rounded px-2 py-1 approval-ok';
+    infoEl.textContent=`Desconto de ${pct.toFixed(1)}% aplicado — dentro do limite permitido.`;
+  } else {
+    aprovArea.classList.add('hidden');
+    infoEl.classList.add('hidden');
+  }
+}
+
+function checkAprovacao(){}
+
+function saveProposta(){
+  const clienteId=document.getElementById('prop-cliente').value;
+  if(!clienteId){alert('Selecione um cliente.');return;}
+  const pct=parseFloat(document.getElementById('prop-desc-perc').value)||0;
+  const aprovArea=!document.getElementById('prop-aprovacao-area').classList.contains('hidden');
+  const id=document.getElementById('prop-id').value||uid();
+  const prods=getSelectedProdIds();
+  const obj={
+    id, clienteId,
+    etapa:document.getElementById('prop-etapa').value||'2',
+    produtos:prods,
+    mensalidade:parseFloat(document.getElementById('prop-mensalidade').value)||0,
+    descontoValor:parseFloat(document.getElementById('prop-desc-valor').value)||0,
+    descontoPerc:pct||0,
+    aprovacao:aprovArea?document.getElementById('prop-aprovacao').value:null,
+    aprovador:aprovArea?document.getElementById('prop-aprovador').value:'',
+    obs:document.getElementById('prop-obs').value,
+    criadaEm:todayStr(),
+  };
+  // Sync etapa do cliente
+  const cli=state.clientes.find(c=>c.id===clienteId);
+  if(cli) cli.etapa=obj.etapa;
+  const idx=state.propostas.findIndex(p=>p.id===id);
+  if(idx>=0) state.propostas[idx]=obj; else state.propostas.unshift(obj);
+  saveState();
+  pushRecord('Propostas',obj);
+  closeModal('modal-proposta');
+  renderPropostas();
+  renderKanban();
+}
+
+function deleteProposta(){
+  if(!confirm('Excluir esta proposta?')) return;
+  const id=document.getElementById('prop-id').value;
+  state.propostas=state.propostas.filter(p=>p.id!==id);
+  saveState();
+  deleteRecord('Propostas',id);
+  closeModal('modal-proposta');
+  renderPropostas();
+}
+
+// ============================================================
+// INIT
+// ============================================================
+document.getElementById('current-date').textContent=new Date().toLocaleDateString('pt-BR',{weekday:'short',day:'2-digit',month:'short',year:'numeric'});
+renderDashboard();
+populateStageFilters();
+// Auto-sync se URL configurada
+if(getApiUrl()){
+  setSyncStatus('ing','Sincronizando...');
+  syncFromSheets().then(()=>{
+    renderDashboard();
+    renderClientes();
+    renderProdutos();
+  });
+} else {
+  setSyncStatus('off','Sem sincronização');
+}
+</script>
+</body>
+</html>
