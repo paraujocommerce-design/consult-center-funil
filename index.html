@@ -995,4 +995,17 @@ function saveProposta(){
 function deleteProposta(){
   if(!confirm('Excluir esta proposta?'))return;
   const id=document.getElementById('prop-id').value;
-  state.propostas=state.propostas.filter(p=>p.id!
+  state.propostas=state.propostas.filter(p=>p.id!==id);
+  saveState();deleteRecord('Propostas',id);closeModal('modal-proposta');renderPropostas();
+}
+
+// ============================================================
+// INIT
+// ============================================================
+document.getElementById('current-date').textContent=new Date().toLocaleDateString('pt-BR',{weekday:'short',day:'2-digit',month:'short',year:'numeric'});
+renderDashboard();populateStageFilters();
+if(getApiUrl()){setSyncStatus('ing','Sincronizando...');syncFromSheets().then(()=>{renderDashboard();renderClientes();renderProdutos();});}
+else setSyncStatus('off','Sem sincronização');
+</script>
+</body>
+</html>
