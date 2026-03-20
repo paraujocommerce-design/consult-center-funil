@@ -6,37 +6,33 @@
 <title>Consult Center – Funil de Vendas</title>
 <style>
   .sync-dot{width:8px;height:8px;border-radius:50%;display:inline-block;}
-  .sync-ok{background:#22c55e;}
-  .sync-off{background:#94a3b8;}
-  .sync-err{background:#ef4444;}
+  .sync-ok{background:#22c55e;} .sync-off{background:#94a3b8;} .sync-err{background:#ef4444;}
   .sync-ing{background:#f59e0b;animation:pulse 1s infinite;}
   @keyframes pulse{0%,100%{opacity:1}50%{opacity:.4}}
 </style>
 <script src="https://cdn.tailwindcss.com"></script>
 <style>
   *{box-sizing:border-box;}
-  html,body{height:100%;overflow:hidden;margin:0;padding:0;font-family:'Inter',system-ui,sans-serif;}
+  html,body{min-height:100%;margin:0;padding:0;font-family:'Inter',system-ui,sans-serif;overflow-x:hidden;}
   ::-webkit-scrollbar{width:5px;height:5px;}
   ::-webkit-scrollbar-track{background:#f1f1f1;}
   ::-webkit-scrollbar-thumb{background:#cbd5e1;border-radius:4px;}
   .tab-btn.active{border-bottom:2px solid #0f4c81;color:#0f4c81;font-weight:600;}
   .tab-btn{border-bottom:2px solid transparent;color:#64748b;}
-  .kanban-col{min-width:170px;max-width:170px;}
+  .kanban-col{min-width:172px;max-width:172px;}
   .kanban-card{cursor:pointer;transition:box-shadow .15s;}
   .kanban-card:hover{box-shadow:0 4px 12px rgba(0,0,0,.15);}
   .overlay{position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:50;display:flex;align-items:center;justify-content:center;}
-  .modal{background:#fff;border-radius:10px;max-height:90vh;overflow-y:auto;width:100%;max-width:700px;box-shadow:0 20px 60px rgba(0,0,0,.25);}
+  .modal{background:#fff;border-radius:10px;max-height:92vh;overflow-y:auto;width:100%;max-width:700px;box-shadow:0 20px 60px rgba(0,0,0,.25);}
   .modal-sm{max-width:420px;}
   .badge{display:inline-block;padding:1px 8px;border-radius:99px;font-size:11px;font-weight:600;}
-  .stage-0{background:#e2e8f0;color:#475569;}
-  .stage-1{background:#dbeafe;color:#1d4ed8;}
-  .stage-2{background:#fef9c3;color:#854d0e;}
-  .stage-3{background:#fed7aa;color:#9a3412;}
-  .stage-4{background:#bbf7d0;color:#166534;}
-  .stage-5{background:#fecaca;color:#991b1b;}
+  .stage-0{background:#e2e8f0;color:#475569;} .stage-1{background:#dbeafe;color:#1d4ed8;}
+  .stage-2{background:#fef9c3;color:#854d0e;} .stage-3{background:#fed7aa;color:#9a3412;}
+  .stage-4{background:#bbf7d0;color:#166534;} .stage-5{background:#fecaca;color:#991b1b;}
   .stage-6{background:#e9d5ff;color:#6b21a8;}
   .metric-card{background:#fff;border-radius:8px;padding:10px 14px;border:1px solid #e2e8f0;}
-  .section-h{height:calc(100vh - 56px);}
+  .section-h{min-height:calc(100vh - 56px);}
+  #tab-funil{height:calc(100vh - 56px);}
   input,select,textarea{font-size:13px;}
   label{font-size:12px;font-weight:500;color:#374151;}
   .form-input{width:100%;border:1px solid #d1d5db;border-radius:6px;padding:5px 8px;font-size:13px;outline:none;}
@@ -51,12 +47,16 @@
   .approval-pending{background:#fff7ed;border:1px solid #fed7aa;color:#9a3412;}
   .approval-ok{background:#f0fdf4;border:1px solid #bbf7d0;color:#166534;}
   .approval-rejected{background:#fef2f2;border:1px solid #fecaca;color:#991b1b;}
+  .lembrete-badge{background:#fef3c7;color:#92400e;border:1px solid #fde68a;}
+  .calc-box{background:#f8fafc;border:1px solid #e2e8f0;border-radius:8px;padding:10px 12px;}
+  .calc-line{display:flex;justify-content:space-between;font-size:12px;padding:2px 0;}
+  .calc-total{display:flex;justify-content:space-between;font-size:13px;font-weight:700;padding-top:6px;border-top:1px solid #e2e8f0;margin-top:4px;}
 </style>
 </head>
 <body class="bg-slate-100">
 
 <!-- HEADER -->
-<header class="bg-white border-b border-slate-200 flex items-center h-14 px-4 gap-6 flex-shrink-0">
+<header class="bg-white border-b border-slate-200 flex items-center h-14 px-4 gap-6 flex-shrink-0 sticky top-0 z-20">
   <div class="flex items-center gap-2 mr-4">
     <div class="w-7 h-7 rounded-lg bg-blue-800 flex items-center justify-center">
       <span class="text-white text-xs font-bold">CC</span>
@@ -71,7 +71,7 @@
     <button class="tab-btn px-4 text-sm transition-colors" onclick="switchTab('propostas')">Propostas</button>
   </nav>
   <div class="ml-auto flex items-center gap-3">
-    <button onclick="openConfigModal()" title="Configurar Google Sheets" class="flex items-center gap-1.5 text-xs text-slate-500 hover:text-blue-700 px-2 py-1 rounded hover:bg-slate-100">
+    <button onclick="openConfigModal()" class="flex items-center gap-1.5 text-xs text-slate-500 hover:text-blue-700 px-2 py-1 rounded hover:bg-slate-100">
       <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"/><circle cx="12" cy="12" r="3"/></svg>
       Sheets
     </button>
@@ -91,19 +91,16 @@
       <button onclick="closeModal('modal-config')" class="text-slate-400 hover:text-slate-600 text-lg font-bold">&times;</button>
     </div>
     <div class="p-4 flex flex-col gap-3">
-      <p class="text-xs text-slate-500">Cole abaixo a URL do seu Google Apps Script Web App para sincronizar os dados com o Google Sheets.</p>
-      <div>
-        <label>URL do Web App (Apps Script)</label>
+      <div><label>URL do Web App (Apps Script)</label>
         <input id="config-api-url" class="form-input mt-1" placeholder="https://script.google.com/macros/s/.../exec"/>
       </div>
       <div id="config-test-result" class="hidden text-xs rounded px-3 py-2"></div>
       <div class="bg-blue-50 border border-blue-100 rounded-lg p-3 text-xs text-blue-700 leading-relaxed">
         <strong>Como configurar:</strong><br/>
         1. Abra <a href="https://script.google.com" target="_blank" class="underline">script.google.com</a><br/>
-        2. Crie um novo projeto e cole o conteúdo do arquivo <strong>Code.gs</strong><br/>
-        3. Clique em <strong>Implantar → Nova implantação</strong><br/>
-        4. Tipo: <strong>App da Web</strong> · Executar como: <strong>Eu</strong> · Acesso: <strong>Qualquer pessoa</strong><br/>
-        5. Copie a URL gerada e cole acima
+        2. Cole o conteúdo do arquivo <strong>Code.gs</strong> e salve<br/>
+        3. <strong>Implantar → Nova implantação</strong> · App da Web · Eu · Qualquer pessoa<br/>
+        4. Copie a URL e cole acima
       </div>
     </div>
     <div class="flex justify-between items-center px-5 py-3 border-t border-slate-100 bg-slate-50">
@@ -117,81 +114,48 @@
 </div>
 
 <!-- TABS CONTENT -->
-<main class="section-h overflow-hidden">
+<main class="section-h">
 
 <!-- ===== DASHBOARD ===== -->
-<div id="tab-dashboard" class="h-full p-3 flex flex-col gap-2">
-  <!-- Row 1: 5 metrics -->
+<div id="tab-dashboard" class="p-3 flex flex-col gap-2">
   <div class="grid grid-cols-5 gap-2 flex-shrink-0">
-    <div class="metric-card">
-      <div class="text-xs text-slate-500">Leads no Funil</div>
-      <div class="text-2xl font-bold text-blue-800" id="d-total-leads">0</div>
-    </div>
-    <div class="metric-card">
-      <div class="text-xs text-slate-500">Propostas Enviadas</div>
-      <div class="text-2xl font-bold text-amber-600" id="d-propostas">0</div>
-    </div>
-    <div class="metric-card">
-      <div class="text-xs text-slate-500">Fechados</div>
-      <div class="text-2xl font-bold text-green-600" id="d-fechados">0</div>
-    </div>
-    <div class="metric-card">
-      <div class="text-xs text-slate-500">Perdidos</div>
-      <div class="text-2xl font-bold text-red-500" id="d-perdidos">0</div>
-    </div>
-    <div class="metric-card">
-      <div class="text-xs text-slate-500">Em Negociação (R$)</div>
-      <div class="text-2xl font-bold text-indigo-600" id="d-val-negoc">0</div>
-    </div>
+    <div class="metric-card"><div class="text-xs text-slate-500">Leads no Funil</div><div class="text-2xl font-bold text-blue-800" id="d-total-leads">0</div></div>
+    <div class="metric-card"><div class="text-xs text-slate-500">Propostas Enviadas</div><div class="text-2xl font-bold text-amber-600" id="d-propostas">0</div></div>
+    <div class="metric-card"><div class="text-xs text-slate-500">Fechados</div><div class="text-2xl font-bold text-green-600" id="d-fechados">0</div></div>
+    <div class="metric-card"><div class="text-xs text-slate-500">Perdidos</div><div class="text-2xl font-bold text-red-500" id="d-perdidos">0</div></div>
+    <div class="metric-card"><div class="text-xs text-slate-500">Em Negociação (R$)</div><div class="text-xl font-bold text-indigo-600" id="d-val-negoc">0</div></div>
   </div>
-  <!-- Row 2: valor fechado + segmentos + produtos -->
   <div class="grid grid-cols-3 gap-2 flex-shrink-0">
     <div class="metric-card flex items-center justify-between">
-      <div>
-        <div class="text-xs text-slate-500">Valor Fechado (R$)</div>
-        <div class="text-xl font-bold text-green-700" id="d-val-fechado">0</div>
-      </div>
+      <div><div class="text-xs text-slate-500">Valor Fechado (R$)</div><div class="text-xl font-bold text-green-700" id="d-val-fechado">0</div></div>
       <svg class="w-8 h-8 text-green-200" fill="currentColor" viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/></svg>
     </div>
-    <div class="metric-card">
-      <div class="text-xs text-slate-500 mb-1">Clientes por Segmento</div>
-      <div id="d-segmentos" class="flex flex-wrap gap-1 overflow-hidden" style="max-height:46px"></div>
-    </div>
-    <div class="metric-card">
-      <div class="text-xs text-slate-500 mb-1">Produtos Mais Usados</div>
-      <div id="d-top-produtos" class="text-xs text-slate-700 leading-relaxed overflow-hidden" style="max-height:46px"></div>
-    </div>
+    <div class="metric-card"><div class="text-xs text-slate-500 mb-1">Clientes por Segmento</div><div id="d-segmentos" class="flex flex-wrap gap-1 overflow-hidden" style="max-height:46px"></div></div>
+    <div class="metric-card"><div class="text-xs text-slate-500 mb-1">Produtos Mais Usados</div><div id="d-top-produtos" class="text-xs text-slate-700 leading-relaxed overflow-hidden" style="max-height:46px"></div></div>
   </div>
-  <!-- Row 3: lists -->
-  <div class="grid grid-cols-2 gap-2 flex-1 min-h-0">
+  <div class="grid grid-cols-2 gap-2" style="min-height:280px">
     <div class="bg-white rounded-lg border border-slate-200 flex flex-col overflow-hidden">
       <div class="px-3 py-2 border-b border-slate-100 text-xs font-semibold text-slate-600">Últimos Contatos</div>
-      <div id="d-ultimos-contatos" class="flex-1 overflow-y-auto divide-y divide-slate-50 text-xs"></div>
+      <div id="d-ultimos-contatos" class="divide-y divide-slate-50 text-xs"></div>
     </div>
     <div class="bg-white rounded-lg border border-slate-200 flex flex-col overflow-hidden">
-      <div class="px-3 py-2 border-b border-slate-100 text-xs font-semibold text-slate-600">Próximas Ações</div>
-      <div id="d-proximas-acoes" class="flex-1 overflow-y-auto divide-y divide-slate-50 text-xs"></div>
+      <div class="px-3 py-2 border-b border-slate-100 text-xs font-semibold text-slate-600">Próximas Ações &amp; Lembretes</div>
+      <div id="d-proximas-acoes" class="divide-y divide-slate-50 text-xs"></div>
     </div>
   </div>
 </div>
 
 <!-- ===== CLIENTES ===== -->
-<div id="tab-clientes" class="h-full hidden flex flex-col">
-  <div class="flex items-center gap-2 px-3 py-2 border-b border-slate-200 bg-white flex-shrink-0">
+<div id="tab-clientes" class="hidden flex flex-col">
+  <div class="flex items-center gap-2 px-3 py-2 border-b border-slate-200 bg-white sticky top-14 z-10">
     <input id="cli-search" type="text" placeholder="Buscar por nome ou CNPJ..." class="form-input" style="max-width:240px" oninput="renderClientes()"/>
-    <select id="cli-filter-stage" class="form-input" style="max-width:160px" onchange="renderClientes()">
-      <option value="">Todas etapas</option>
-    </select>
-    <select id="cli-filter-seg" class="form-input" style="max-width:140px" onchange="renderClientes()">
-      <option value="">Todos segmentos</option>
-    </select>
+    <select id="cli-filter-stage" class="form-input" style="max-width:160px" onchange="renderClientes()"><option value="">Todas etapas</option></select>
+    <select id="cli-filter-seg" class="form-input" style="max-width:140px" onchange="renderClientes()"><option value="">Todos segmentos</option></select>
     <button class="btn-primary ml-auto" onclick="openClienteModal(null)">+ Novo Cliente</button>
   </div>
-  <div class="flex flex-1 min-h-0">
-    <!-- Table -->
-    <div class="flex-1 overflow-auto">
-      <table class="w-full text-xs">
-        <thead class="bg-slate-50 sticky top-0 z-10">
+  <div class="overflow-auto">
+    <table class="w-full text-xs">
+      <thead class="bg-slate-50 sticky top-28 z-10">
           <tr class="text-left text-slate-500">
             <th class="px-3 py-2 font-semibold">Nome Fantasia</th>
             <th class="px-3 py-2 font-semibold">CNPJ</th>
@@ -200,30 +164,28 @@
             <th class="px-3 py-2 font-semibold">Contato</th>
             <th class="px-3 py-2 font-semibold">Etapa</th>
             <th class="px-3 py-2 font-semibold">Últ. Contato</th>
+            <th class="px-3 py-2 font-semibold">Lembrete</th>
             <th class="px-3 py-2 font-semibold">Próx. Ação</th>
             <th class="px-3 py-2 font-semibold">Ações</th>
           </tr>
         </thead>
         <tbody id="clientes-tbody"></tbody>
       </table>
-    </div>
   </div>
 </div>
 
 <!-- ===== PRODUTOS ===== -->
-<div id="tab-produtos" class="h-full hidden flex flex-col">
-  <div class="flex items-center gap-2 px-3 py-2 border-b border-slate-200 bg-white flex-shrink-0">
+<div id="tab-produtos" class="hidden flex flex-col">
+  <div class="flex items-center gap-2 px-3 py-2 border-b border-slate-200 bg-white sticky top-14 z-10">
     <input id="prod-search" type="text" placeholder="Buscar produto..." class="form-input" style="max-width:260px" oninput="renderProdutos()"/>
     <select id="prod-filter" class="form-input" style="max-width:140px" onchange="renderProdutos()">
-      <option value="">Todos</option>
-      <option value="ativo">Ativos</option>
-      <option value="inativo">Inativos</option>
+      <option value="">Todos</option><option value="ativo">Ativos</option><option value="inativo">Inativos</option>
     </select>
     <button class="btn-primary ml-auto" onclick="openProdutoModal(null)">+ Novo Produto</button>
   </div>
-  <div class="flex-1 overflow-auto">
+  <div>
     <table class="w-full text-xs">
-      <thead class="bg-slate-50 sticky top-0 z-10">
+      <thead class="bg-slate-50 sticky top-28 z-10">
         <tr class="text-left text-slate-500">
           <th class="px-3 py-2 font-semibold">Nome do Produto</th>
           <th class="px-3 py-2 font-semibold">Valor (R$)</th>
@@ -250,12 +212,10 @@
 </div>
 
 <!-- ===== PROPOSTAS ===== -->
-<div id="tab-propostas" class="h-full hidden flex flex-col">
-  <div class="flex items-center gap-2 px-3 py-2 border-b border-slate-200 bg-white flex-shrink-0">
+<div id="tab-propostas" class="hidden flex flex-col">
+  <div class="flex items-center gap-2 px-3 py-2 border-b border-slate-200 bg-white sticky top-14 z-10">
     <span class="text-xs font-semibold text-slate-600">Propostas / Planos</span>
-    <select id="prop-filter-stage" class="form-input ml-4" style="max-width:160px" onchange="renderPropostas()">
-      <option value="">Todas etapas</option>
-    </select>
+    <select id="prop-filter-stage" class="form-input ml-4" style="max-width:160px" onchange="renderPropostas()"><option value="">Todas etapas</option></select>
     <select id="prop-filter-aprov" class="form-input" style="max-width:180px" onchange="renderPropostas()">
       <option value="">Todos status desconto</option>
       <option value="pendente">Aguardando Aprovação</option>
@@ -265,18 +225,18 @@
     </select>
     <button class="btn-primary ml-auto" onclick="openPropostaModal(null)">+ Nova Proposta</button>
   </div>
-  <div class="flex-1 overflow-auto">
+  <div>
     <table class="w-full text-xs">
-      <thead class="bg-slate-50 sticky top-0 z-10">
+      <thead class="bg-slate-50 sticky top-28 z-10">
         <tr class="text-left text-slate-500">
           <th class="px-3 py-2 font-semibold">Cliente</th>
           <th class="px-3 py-2 font-semibold">Etapa</th>
           <th class="px-3 py-2 font-semibold">Produtos</th>
-          <th class="px-3 py-2 font-semibold">Mensalidade (R$)</th>
+          <th class="px-3 py-2 font-semibold">Subtotal</th>
           <th class="px-3 py-2 font-semibold">Desconto</th>
+          <th class="px-3 py-2 font-semibold">Mensalidade</th>
+          <th class="px-3 py-2 font-semibold">Cortesia</th>
           <th class="px-3 py-2 font-semibold">Aprovação</th>
-          <th class="px-3 py-2 font-semibold">Criada em</th>
-          <th class="px-3 py-2 font-semibold">Observações</th>
           <th class="px-3 py-2 font-semibold">Ações</th>
         </tr>
       </thead>
@@ -284,7 +244,6 @@
     </table>
   </div>
 </div>
-
 </main>
 
 <!-- ===== MODAL CLIENTE ===== -->
@@ -324,21 +283,30 @@
         <div><label>Nome do Contato</label><input id="cli-contato-nome" class="form-input mt-1" placeholder="João Silva"/></div>
         <div><label>Cargo do Contato</label><input id="cli-contato-cargo" class="form-input mt-1" placeholder="Gerente"/></div>
         <div><label>Telefone</label><input id="cli-telefone" class="form-input mt-1" placeholder="(11) 99999-9999" oninput="maskPhone(this)"/></div>
-        <div><label>Status no Funil</label>
-          <select id="cli-etapa" class="form-input mt-1" onchange="updateEtapaColor(this)">
-            <option value="0">Contato Inicial</option>
-            <option value="1">Em Atendimento</option>
-            <option value="2">Proposta Enviada</option>
-            <option value="3">Em Negociação</option>
-            <option value="4">Fechado</option>
-            <option value="5">Perdido</option>
+        <div><label>Etapa no Funil</label>
+          <select id="cli-etapa" class="form-input mt-1">
+            <option value="0">Contato Inicial</option><option value="1">Em Atendimento</option>
+            <option value="2">Proposta Enviada</option><option value="3">Em Negociação</option>
+            <option value="4">Fechado</option><option value="5">Perdido</option>
             <option value="6">Pós-venda/Implantação</option>
           </select>
         </div>
         <div><label>Data Últ. Contato</label><input id="cli-data-contato" type="date" class="form-input mt-1"/></div>
         <div><label>Próxima Ação</label><input id="cli-proxima-acao" class="form-input mt-1" placeholder="Enviar proposta..."/></div>
         <div class="col-span-3"><label>Histórico da Conversa</label><textarea id="cli-historico" rows="2" class="form-input mt-1 resize-none" placeholder="Registre aqui o histórico..."></textarea></div>
-        <div class="col-span-3"><label>Observações</label><textarea id="cli-obs" rows="2" class="form-input mt-1 resize-none" placeholder="Observações gerais..."></textarea></div>
+        <div class="col-span-3"><label>Observações</label><textarea id="cli-obs" rows="1" class="form-input mt-1 resize-none"></textarea></div>
+        <!-- LEMBRETE DE RETORNO -->
+        <div class="col-span-3 pt-2 border-t border-slate-100">
+          <div class="flex items-center gap-2 mb-2">
+            <svg class="w-4 h-4 text-amber-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"/></svg>
+            <span class="text-xs font-semibold text-amber-700">Lembrete de Retorno</span>
+          </div>
+          <div class="grid grid-cols-3 gap-3">
+            <div><label>Data do Retorno</label><input id="cli-lembrete-data" type="date" class="form-input mt-1"/></div>
+            <div><label>Hora</label><input id="cli-lembrete-hora" type="time" class="form-input mt-1"/></div>
+            <div><label>Motivo / Observação</label><input id="cli-lembrete-obs" class="form-input mt-1" placeholder="Ex: Cliente em reunião, ligar após..."/></div>
+          </div>
+        </div>
       </div>
     </div>
     <div class="flex justify-between items-center px-5 py-3 border-t border-slate-100 bg-slate-50">
@@ -364,10 +332,7 @@
       <div><label>Valor (R$)</label><input id="prod-valor" type="number" class="form-input mt-1" placeholder="0,00"/></div>
       <div><label>Descrição Curta</label><textarea id="prod-descricao" rows="2" class="form-input mt-1 resize-none"></textarea></div>
       <div><label>Status</label>
-        <select id="prod-status" class="form-input mt-1">
-          <option value="ativo">Ativo</option>
-          <option value="inativo">Inativo</option>
-        </select>
+        <select id="prod-status" class="form-input mt-1"><option value="ativo">Ativo</option><option value="inativo">Inativo</option></select>
       </div>
     </div>
     <div class="flex justify-between items-center px-5 py-3 border-t border-slate-100 bg-slate-50">
@@ -382,59 +347,74 @@
 
 <!-- ===== MODAL PROPOSTA ===== -->
 <div id="modal-proposta" class="overlay hidden" onclick="if(event.target===this)closeModal('modal-proposta')">
-  <div class="modal p-0" style="max-width:760px">
+  <div class="modal p-0" style="max-width:820px">
     <div class="flex items-center justify-between px-5 py-3 border-b border-slate-100">
-      <span class="font-bold text-slate-700" id="modal-prop-title">Montar Plano / Proposta</span>
+      <div class="flex items-center gap-3">
+        <span class="font-bold text-slate-700" id="modal-prop-title">Montar Plano / Proposta</span>
+        <span id="prop-etapa-badge" class="badge stage-0"></span>
+      </div>
       <button onclick="closeModal('modal-proposta')" class="text-slate-400 hover:text-slate-600 text-lg font-bold">&times;</button>
     </div>
     <div class="p-4 grid grid-cols-2 gap-4">
       <input type="hidden" id="prop-id"/>
-      <!-- Coluna esquerda -->
+      <!-- Coluna esquerda: cliente + produtos -->
       <div class="flex flex-col gap-3">
         <div>
           <label>Cliente *</label>
-          <select id="prop-cliente" class="form-input mt-1"></select>
+          <select id="prop-cliente" class="form-input mt-1" onchange="onPropClienteChange()"></select>
         </div>
         <div>
-          <label>Etapa no Funil</label>
-          <select id="prop-etapa" class="form-input mt-1">
-            <option value="0">Contato Inicial</option>
-            <option value="1">Em Atendimento</option>
-            <option value="2">Proposta Enviada</option>
-            <option value="3">Em Negociação</option>
-            <option value="4">Fechado</option>
-            <option value="5">Perdido</option>
-            <option value="6">Pós-venda/Implantação</option>
-          </select>
+          <label>Produtos do Plano <span class="text-slate-400 font-normal">(marque e informe a quantidade)</span></label>
+          <div id="prop-produtos-list" class="mt-1 border border-slate-200 rounded-lg overflow-y-auto bg-white" style="max-height:220px"></div>
         </div>
-        <div>
-          <label>Produtos Selecionados</label>
-          <div id="prop-produtos-list" class="mt-1 border border-slate-200 rounded-lg overflow-y-auto bg-white" style="max-height:200px"></div>
+        <!-- CORTESIA -->
+        <div class="border border-purple-100 rounded-lg p-3 bg-purple-50">
+          <div class="flex items-center gap-2 mb-2">
+            <svg class="w-3.5 h-3.5 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v13m0-13V6a2 2 0 112 2h-2zm0 0V5.5A2.5 2.5 0 109.5 8H12zm-7 4h14M5 12a2 2 0 110-4h14a2 2 0 110 4M5 12v7a2 2 0 002 2h10a2 2 0 002-2v-7"/></svg>
+            <span class="text-xs font-semibold text-purple-700">Cortesia / Bônus</span>
+          </div>
+          <div class="grid grid-cols-3 gap-2">
+            <div class="col-span-2"><label>Produto em Cortesia</label>
+              <select id="prop-cortesia-prod" class="form-input mt-1" onchange="onCortesiaProdChange()">
+                <option value="">Nenhuma</option>
+              </select>
+            </div>
+            <div><label>Qtd.</label><input id="prop-cortesia-qty" type="number" min="0" value="0" class="form-input mt-1" oninput="recalcProposta()"/></div>
+          </div>
+          <div class="flex items-center justify-between mt-2 text-xs">
+            <span class="text-purple-600">Valor que seria cobrado:</span>
+            <span id="prop-cortesia-valor-label" class="font-bold text-purple-700">R$ 0,00</span>
+          </div>
+          <textarea id="prop-cortesia-obs" rows="1" class="form-input mt-2 resize-none text-xs" placeholder="Descreva a condição especial concedida..."></textarea>
         </div>
       </div>
-      <!-- Coluna direita -->
+      <!-- Coluna direita: cálculo + desconto + obs -->
       <div class="flex flex-col gap-3">
-        <div class="bg-slate-50 rounded-lg p-3 border border-slate-200">
-          <div class="flex justify-between text-xs mb-1"><span class="text-slate-500">Valor Total dos Produtos:</span><span id="prop-total-produtos" class="font-bold">R$ 0,00</span></div>
-          <div class="flex items-center gap-2 mb-2">
-            <div class="flex-1">
-              <label>Mensalidade (R$)</label>
-              <input id="prop-mensalidade" type="number" class="form-input mt-1" placeholder="0,00" oninput="calcDesconto()"/>
-            </div>
-          </div>
-          <div class="flex items-center gap-2 mb-1">
-            <div class="flex-1">
-              <label>Desconto</label>
-              <div class="flex gap-1 mt-1">
-                <input id="prop-desc-valor" type="number" class="form-input" placeholder="R$" oninput="syncDesconto('valor')"/>
-                <input id="prop-desc-perc" type="number" class="form-input" placeholder="%" min="0" max="100" oninput="syncDesconto('perc')"/>
-              </div>
-            </div>
+        <!-- Resumo do cálculo -->
+        <div class="calc-box">
+          <div class="text-xs font-semibold text-slate-600 mb-2">Resumo do Plano</div>
+          <div class="calc-line"><span class="text-slate-500">Subtotal produtos:</span><span id="prop-subtotal" class="font-medium">R$ 0,00</span></div>
+          <div class="calc-line text-purple-600"><span>Cortesia (desconto):</span><span id="prop-cortesia-deducao">- R$ 0,00</span></div>
+          <div class="calc-line text-red-500"><span>Desconto comercial:</span><span id="prop-desc-display">- R$ 0,00</span></div>
+          <div class="calc-total text-blue-800"><span>Mensalidade Final:</span><span id="prop-mensalidade-display">R$ 0,00</span></div>
+        </div>
+        <!-- Mensalidade -->
+        <div>
+          <label>Mensalidade (R$) <span class="text-slate-400 font-normal text-xs">— calculada automaticamente</span></label>
+          <input id="prop-mensalidade" type="number" class="form-input mt-1" placeholder="Calculado automaticamente" oninput="onMensalidadeManual()"/>
+          <button class="text-xs text-blue-600 mt-1 hover:underline" onclick="restoreMensalidade()">↺ Restaurar valor automático</button>
+        </div>
+        <!-- Desconto -->
+        <div>
+          <label>Desconto Comercial</label>
+          <div class="flex gap-2 mt-1">
+            <div class="flex-1"><input id="prop-desc-valor" type="number" class="form-input" placeholder="Valor R$" oninput="syncDesconto('valor')"/></div>
+            <div class="flex-1"><input id="prop-desc-perc" type="number" class="form-input" placeholder="Percentual %" min="0" max="100" oninput="syncDesconto('perc')"/></div>
           </div>
           <div id="prop-desconto-info" class="text-xs mt-1 hidden rounded px-2 py-1"></div>
           <div id="prop-aprovacao-area" class="hidden mt-2">
             <div class="text-xs font-semibold text-orange-700 mb-1">Desconto &gt; 10% — Requer Autorização</div>
-            <select id="prop-aprovacao" class="form-input" onchange="checkAprovacao()">
+            <select id="prop-aprovacao" class="form-input">
               <option value="pendente">Aguardando Aprovação</option>
               <option value="aprovado">Aprovado pela Gestão</option>
               <option value="reprovado">Reprovado</option>
@@ -442,9 +422,10 @@
             <input id="prop-aprovador" class="form-input mt-1" placeholder="Nome do aprovador"/>
           </div>
         </div>
+        <!-- Observações -->
         <div>
           <label>Observações da Proposta</label>
-          <textarea id="prop-obs" rows="3" class="form-input mt-1 resize-none" placeholder="Condições especiais, validade da proposta..."></textarea>
+          <textarea id="prop-obs" rows="3" class="form-input mt-1 resize-none" placeholder="Condições especiais, validade, prazo..."></textarea>
         </div>
       </div>
     </div>
@@ -463,137 +444,63 @@
 // API – GOOGLE SHEETS
 // ============================================================
 function getApiUrl(){return localStorage.getItem('cc_api_url')||'';}
-
-function setSyncStatus(status,label){
-  const dot=document.getElementById('sync-dot');
-  const lbl=document.getElementById('sync-label');
-  dot.className='sync-dot sync-'+status;
-  lbl.textContent=label;
-}
-
+function setSyncStatus(s,l){document.getElementById('sync-dot').className='sync-dot sync-'+s;document.getElementById('sync-label').textContent=l;}
 async function apiGet(){
-  const url=getApiUrl();
-  if(!url) return null;
+  const url=getApiUrl();if(!url)return null;
   setSyncStatus('ing','Sincronizando...');
-  return new Promise((resolve)=>{
-    const cbName='cc_cb_'+Date.now();
-    const script=document.createElement('script');
-    const timer=setTimeout(()=>{
-      cleanup();setSyncStatus('err','Timeout na conexão');resolve(null);
-    },15000);
-    function cleanup(){
-      delete window[cbName];
-      if(script.parentNode) script.parentNode.removeChild(script);
-      clearTimeout(timer);
-    }
-    window[cbName]=function(data){
-      cleanup();
-      if(data && data.error){setSyncStatus('err','Erro: '+data.error);resolve(null);return;}
-      setSyncStatus('ok','Sincronizado');
-      resolve(data);
-    };
-    script.onerror=()=>{cleanup();setSyncStatus('err','Erro na conexão');resolve(null);};
-    script.src=url+'?callback='+cbName+'&t='+Date.now();
-    document.head.appendChild(script);
+  return new Promise(resolve=>{
+    const cb='cc_cb_'+Date.now(),sc=document.createElement('script');
+    const t=setTimeout(()=>{cleanup();setSyncStatus('err','Timeout');resolve(null);},15000);
+    function cleanup(){delete window[cb];sc.parentNode&&sc.parentNode.removeChild(sc);clearTimeout(t);}
+    window[cb]=d=>{cleanup();if(d&&d.error){setSyncStatus('err','Erro: '+d.error);resolve(null);}else{setSyncStatus('ok','Sincronizado');resolve(d);}};
+    sc.onerror=()=>{cleanup();setSyncStatus('err','Erro na conexão');resolve(null);};
+    sc.src=url+'?callback='+cb+'&t='+Date.now();document.head.appendChild(sc);
   });
 }
-
 async function apiPost(body){
-  const url=getApiUrl();
-  if(!url) return false;
+  const url=getApiUrl();if(!url)return false;
   setSyncStatus('ing','Sincronizando...');
-  try{
-    await fetch(url,{method:'POST',mode:'no-cors',body:JSON.stringify(body),headers:{'Content-Type':'text/plain'}});
-    setSyncStatus('ok','Sincronizado');
-    return true;
-  }catch(e){
-    setSyncStatus('err','Erro ao salvar');
-    console.error('apiPost error:',e);
-    return false;
-  }
+  try{await fetch(url,{method:'POST',mode:'no-cors',body:JSON.stringify(body),headers:{'Content-Type':'text/plain'}});setSyncStatus('ok','Sincronizado');return true;}
+  catch(e){setSyncStatus('err','Erro ao salvar');return false;}
 }
-
 async function syncFromSheets(){
-  const data=await apiGet();
-  if(!data) return;
-  if(data.clientes && data.clientes.length) state.clientes=data.clientes;
-  if(data.produtos && data.produtos.length) state.produtos=data.produtos;
-  if(data.propostas) state.propostas=data.propostas;
+  const d=await apiGet();if(!d)return;
+  if(d.clientes&&d.clientes.length) state.clientes=d.clientes;
+  if(d.produtos&&d.produtos.length){
+    // Mescla: atualiza existentes pelo id, adiciona novos do Sheets, mantém locais
+    d.produtos.forEach(sp=>{
+      const idx=state.produtos.findIndex(p=>p.id===sp.id);
+      if(idx>=0) state.produtos[idx]=sp; else state.produtos.push(sp);
+    });
+  }
+  if(d.propostas) state.propostas=d.propostas;
   saveState();
 }
-
-async function pushRecord(sheet,record){
-  return apiPost({action:'save',sheet,record});
-}
-async function deleteRecord(sheet,id){
-  return apiPost({action:'delete',sheet,record:{id}});
-}
-
-function openConfigModal(){
-  document.getElementById('config-api-url').value=getApiUrl();
-  document.getElementById('config-test-result').classList.add('hidden');
-  openModal('modal-config');
-}
-function saveApiConfig(){
-  const url=document.getElementById('config-api-url').value.trim();
-  localStorage.setItem('cc_api_url',url);
-  closeModal('modal-config');
-  if(url){setSyncStatus('off','Conectando...');syncFromSheets().then(()=>{renderDashboard();renderClientes();renderProdutos();});}
-  else setSyncStatus('off','Sem sincronização');
-}
-function clearApiConfig(){
-  localStorage.removeItem('cc_api_url');
-  document.getElementById('config-api-url').value='';
-  setSyncStatus('off','Sem sincronização');
-  closeModal('modal-config');
-}
+async function pushRecord(sheet,record){return apiPost({action:'save',sheet,record});}
+async function deleteRecord(sheet,id){return apiPost({action:'delete',sheet,record:{id}});}
+function openConfigModal(){document.getElementById('config-api-url').value=getApiUrl();document.getElementById('config-test-result').classList.add('hidden');openModal('modal-config');}
+function saveApiConfig(){const u=document.getElementById('config-api-url').value.trim();localStorage.setItem('cc_api_url',u);closeModal('modal-config');if(u){setSyncStatus('off','Conectando...');syncFromSheets().then(()=>{renderDashboard();renderClientes();renderProdutos();});}else setSyncStatus('off','Sem sincronização');}
+function clearApiConfig(){localStorage.removeItem('cc_api_url');document.getElementById('config-api-url').value='';setSyncStatus('off','Sem sincronização');closeModal('modal-config');}
 async function testApiConnection(){
-  const url=document.getElementById('config-api-url').value.trim();
-  if(!url){alert('Insira a URL primeiro.');return;}
+  const url=document.getElementById('config-api-url').value.trim();if(!url){alert('Insira a URL.');return;}
   const el=document.getElementById('config-test-result');
-  el.className='text-xs rounded px-3 py-2 bg-amber-50 border border-amber-200 text-amber-700';
-  el.textContent='Testando...';
-  el.classList.remove('hidden');
-  const cbName='cc_test_'+Date.now();
-  const script=document.createElement('script');
-  const timer=setTimeout(()=>{
-    delete window[cbName];
-    if(script.parentNode) script.parentNode.removeChild(script);
-    el.className='text-xs rounded px-3 py-2 bg-red-50 border border-red-200 text-red-700';
-    el.textContent='Erro: timeout — verifique a URL e se o deploy está publicado corretamente.';
-  },15000);
-  window[cbName]=function(data){
-    clearTimeout(timer);
-    delete window[cbName];
-    if(script.parentNode) script.parentNode.removeChild(script);
-    if(data && data.error){
-      el.className='text-xs rounded px-3 py-2 bg-red-50 border border-red-200 text-red-700';
-      el.textContent='Erro do servidor: '+data.error;
-    } else {
-      el.className='text-xs rounded px-3 py-2 bg-green-50 border border-green-200 text-green-700';
-      el.textContent='Conexão bem-sucedida! Planilha encontrada.';
-    }
-  };
-  script.onerror=()=>{
-    clearTimeout(timer);
-    delete window[cbName];
-    el.className='text-xs rounded px-3 py-2 bg-red-50 border border-red-200 text-red-700';
-    el.textContent='Erro: não foi possível conectar. Verifique a URL.';
-  };
-  script.src=url+'?callback='+cbName+'&t='+Date.now();
-  document.head.appendChild(script);
+  el.className='text-xs rounded px-3 py-2 bg-amber-50 border border-amber-200 text-amber-700';el.textContent='Testando...';el.classList.remove('hidden');
+  const cb='cc_test_'+Date.now(),sc=document.createElement('script');
+  const t=setTimeout(()=>{delete window[cb];sc.parentNode&&sc.parentNode.removeChild(sc);el.className='text-xs rounded px-3 py-2 bg-red-50 border border-red-200 text-red-700';el.textContent='Timeout — verifique a URL e o deploy.';},15000);
+  window[cb]=d=>{clearTimeout(t);delete window[cb];sc.parentNode&&sc.parentNode.removeChild(sc);if(d&&d.error){el.className='text-xs rounded px-3 py-2 bg-red-50 border border-red-200 text-red-700';el.textContent='Erro: '+d.error;}else{el.className='text-xs rounded px-3 py-2 bg-green-50 border border-green-200 text-green-700';el.textContent='Conexão bem-sucedida!';}};
+  sc.onerror=()=>{clearTimeout(t);delete window[cb];el.className='text-xs rounded px-3 py-2 bg-red-50 border border-red-200 text-red-700';el.textContent='Não foi possível conectar.';};
+  sc.src=url+'?callback='+cb+'&t='+Date.now();document.head.appendChild(sc);
 }
 
 // ============================================================
 // STATE & STORAGE
 // ============================================================
-const STAGES = ['Contato Inicial','Em Atendimento','Proposta Enviada','Em Negociação','Fechado','Perdido','Pós-venda/Implantação'];
-const STAGE_COLORS = ['stage-0','stage-1','stage-2','stage-3','stage-4','stage-5','stage-6'];
-
-const DEFAULT_PRODUCTS = [
+const STAGES=['Contato Inicial','Em Atendimento','Proposta Enviada','Em Negociação','Fechado','Perdido','Pós-venda/Implantação'];
+const STAGE_COLORS=['stage-0','stage-1','stage-2','stage-3','stage-4','stage-5','stage-6'];
+const DEFAULT_PRODUCTS=[
   {nome:'Relatório Serasa Completo com Score',valor:0,descricao:'Relatório completo com análise de crédito e score Serasa.',status:'ativo'},
   {nome:'Consulta Serasa Top',valor:0,descricao:'Consulta completa Serasa Top.',status:'ativo'},
-  {nome:'Relatório Pré-locação/Aluguel, Pré-matrícula, Pré-admissão com Serasa',valor:0,descricao:'Relatório para análise prévia em processos de locação, matrícula ou admissão.',status:'ativo'},
+  {nome:'Relatório Pré-locação/Aluguel, Pré-matrícula, Pré-admissão com Serasa',valor:0,descricao:'Relatório para análise prévia em locação, matrícula ou admissão.',status:'ativo'},
   {nome:'Score Serasa com Cadastro Positivo',valor:0,descricao:'Score com informações do Cadastro Positivo.',status:'ativo'},
   {nome:'Localizador Nacional CPF',valor:0,descricao:'Localização de pessoa física em âmbito nacional.',status:'ativo'},
   {nome:'Localizador Nacional CNPJ',valor:0,descricao:'Localização de pessoa jurídica em âmbito nacional.',status:'ativo'},
@@ -601,46 +508,45 @@ const DEFAULT_PRODUCTS = [
   {nome:'Localizador Nacional Completo CPF/CNPJ',valor:0,descricao:'Localizador completo para pessoa física e jurídica.',status:'ativo'},
   {nome:'Relatório de Processos Judiciais e Criminais',valor:0,descricao:'Relatório de processos judiciais e registros criminais.',status:'ativo'},
   {nome:'Relatório Detalhado de Processos Judiciais e Criminais',valor:0,descricao:'Versão detalhada com histórico completo.',status:'ativo'},
-  {nome:'Relatório Cadin Detalhado',valor:0,descricao:'Relatório do Cadastro Informativo de créditos não quitados do setor público federal.',status:'ativo'},
+  {nome:'Relatório Cadin Detalhado',valor:0,descricao:'Relatório do Cadastro Informativo federal.',status:'ativo'},
   {nome:'Consulta de Mandado de Prisão',valor:0,descricao:'Verificação de mandados de prisão ativos.',status:'ativo'},
-  {nome:'Negativação Serasa Experian',valor:0,descricao:'Serviço de negativação de devedores na Serasa Experian.',status:'ativo'},
+  {nome:'Negativação Serasa Experian',valor:0,descricao:'Serviço de negativação na Serasa Experian.',status:'ativo'},
   {nome:'Manutenção PEFIN',valor:0,descricao:'Manutenção do Cadastro de Pendências Financeiras.',status:'ativo'},
-  {nome:'Preenchimento Automático para Negativação de Devedores',valor:0,descricao:'Automação do processo de negativação.',status:'ativo'},
-  {nome:'Consulta Veicular Diamond',valor:0,descricao:'Consulta veicular completa categoria Diamond.',status:'ativo'},
-  {nome:'Consulta Veicular por Placa/Documento',valor:0,descricao:'Consulta de veículo por placa ou documento do proprietário.',status:'ativo'},
-  {nome:'Serasa Antifraude (Me Proteja)',valor:0,descricao:'Monitoramento e proteção contra fraude de identidade.',status:'ativo'},
+  {nome:'Preenchimento Automático para Negativação de Devedores (CPF/CNPJ) – Endereços, Telefones + E-Mails (Base Empresa)',valor:1.99,descricao:'Preenchimento automático para negativação de devedores com informações de endereços, telefones e e-mails. Base empresa.',status:'ativo'},
+  {nome:'Consulta Veicular Diamond – Base Estadual + Nacional + Leilão + Roubo/Furto + Sinistros + Débitos + Restrições + Renajud + Fipe + Gravame + Histórico de Proprietários',valor:45.90,descricao:'Consulta veicular completa: Base Estadual e Nacional, Bases de Leilão Nacional e Remarketing, Roubo e Furto, Indícios de Sinistros, Débitos Estaduais (Multa, Licenciamento, IPVA), Restrições, Renajud, Renainf, Recall, Histórico de Proprietários Online, Proprietário Atual, Débitos Trabalhistas, Tabela Fipe, Gravame e Relatório Completo de Dados Cadastrais.',status:'ativo'},
+  {nome:'Consulta Veicular – Proprietários do Veículo por Placa / Veículos por Documento (CPF/CNPJ)',valor:15.90,descricao:'Consulta de proprietários do veículo por placa ou veículos vinculados a documento CPF/CNPJ.',status:'ativo'},
+  {nome:'Serasa Antifraude (Me Proteja) – Monitoramento 24h do CNPJ + Três CPFs',valor:39.90,descricao:'Monitoramento 24 horas do CNPJ mais três CPFs. Proteção contra fraude de identidade.',status:'ativo'},
 ];
-
 function loadState(){
-  let s = {clientes:[],produtos:[],propostas:[]};
+  let s={clientes:[],produtos:[],propostas:[]};
   try{
-    const stored = localStorage.getItem('cc_funil');
-    if(stored) s = JSON.parse(stored);
-    if(!s.produtos || s.produtos.length===0){
-      s.produtos = DEFAULT_PRODUCTS.map((p,i)=>({...p,id:uid()}));
-    }
-  }catch(e){
-    s.produtos = DEFAULT_PRODUCTS.map(p=>({...p,id:uid()}));
-  }
+    const st=localStorage.getItem('cc_funil');
+    if(st) s=JSON.parse(st);
+    if(!s.produtos) s.produtos=[];
+    // Mescla: adiciona produtos padrão que ainda não existem pelo nome
+    DEFAULT_PRODUCTS.forEach(def=>{
+      const existe=s.produtos.some(p=>p.nome.toLowerCase()===def.nome.toLowerCase());
+      if(!existe) s.produtos.push({...def,id:uid()});
+    });
+  }catch(e){s.produtos=DEFAULT_PRODUCTS.map(p=>({...p,id:uid()}));}
   return s;
 }
 function saveState(){localStorage.setItem('cc_funil',JSON.stringify(state));}
 function uid(){return Date.now().toString(36)+Math.random().toString(36).slice(2);}
-
-let state = loadState();
+let state=loadState();
 
 // ============================================================
 // TABS
 // ============================================================
 function switchTab(name){
   ['dashboard','clientes','produtos','funil','propostas'].forEach(t=>{
-    document.getElementById('tab-'+t).classList.add('hidden');
-    document.getElementById('tab-'+t).classList.remove('flex');
+    const el=document.getElementById('tab-'+t);
+    el.classList.add('hidden');el.classList.remove('flex');
   });
   document.querySelectorAll('.tab-btn').forEach(b=>b.classList.remove('active'));
-  const el = document.getElementById('tab-'+name);
+  const el=document.getElementById('tab-'+name);
   el.classList.remove('hidden');
-  if(['clientes','funil','propostas'].includes(name)) el.classList.add('flex');
+  if(['clientes','funil','propostas','produtos'].includes(name)) el.classList.add('flex');
   event.currentTarget.classList.add('active');
   if(name==='dashboard') renderDashboard();
   if(name==='clientes') renderClientes();
@@ -652,123 +558,79 @@ function switchTab(name){
 // ============================================================
 // UTILS
 // ============================================================
-function fmtMoney(v){
-  v=parseFloat(v)||0;
-  return v.toLocaleString('pt-BR',{minimumFractionDigits:2,maximumFractionDigits:2});
-}
-function stageBadge(idx){
-  return `<span class="badge ${STAGE_COLORS[idx]}">${STAGES[idx]||'-'}</span>`;
-}
-function maskCNPJ(el){
-  let v=el.value.replace(/\D/g,'');
-  v=v.replace(/^(\d{2})(\d)/,'$1.$2');
-  v=v.replace(/^(\d{2})\.(\d{3})(\d)/,'$1.$2.$3');
-  v=v.replace(/\.(\d{3})(\d)/,'.$1/$2');
-  v=v.replace(/(\d{4})(\d)/,'$1-$2');
-  el.value=v.slice(0,18);
-}
-function maskPhone(el){
-  let v=el.value.replace(/\D/g,'');
-  if(v.length<=10) v=v.replace(/(\d{2})(\d{4})(\d{0,4})/,'($1) $2-$3');
-  else v=v.replace(/(\d{2})(\d{5})(\d{0,4})/,'($1) $2-$3');
-  el.value=v.slice(0,15);
-}
+function fmtMoney(v){v=parseFloat(v)||0;return v.toLocaleString('pt-BR',{minimumFractionDigits:2,maximumFractionDigits:2});}
+function stageBadge(idx){return `<span class="badge ${STAGE_COLORS[idx]||'stage-0'}">${STAGES[idx]||'-'}</span>`;}
+function maskCNPJ(el){let v=el.value.replace(/\D/g,'');v=v.replace(/^(\d{2})(\d)/,'$1.$2');v=v.replace(/^(\d{2})\.(\d{3})(\d)/,'$1.$2.$3');v=v.replace(/\.(\d{3})(\d)/,'.$1/$2');v=v.replace(/(\d{4})(\d)/,'$1-$2');el.value=v.slice(0,18);}
+function maskPhone(el){let v=el.value.replace(/\D/g,'');if(v.length<=10)v=v.replace(/(\d{2})(\d{4})(\d{0,4})/,'($1) $2-$3');else v=v.replace(/(\d{2})(\d{5})(\d{0,4})/,'($1) $2-$3');el.value=v.slice(0,15);}
 function todayStr(){return new Date().toISOString().slice(0,10);}
 function fmtDate(d){if(!d)return'-';const p=d.split('-');return p[2]+'/'+p[1]+'/'+p[0];}
+function fmtDateTime(d,h){if(!d)return'-';return fmtDate(d)+(h?' às '+h:'');}
 function closeModal(id){document.getElementById(id).classList.add('hidden');}
 function openModal(id){document.getElementById(id).classList.remove('hidden');}
+// Normalize produtos array: suporta [{id,qty}] e ['id']
+function normProds(arr){if(!arr)return[];return arr.map(x=>typeof x==='string'?{id:x,qty:1}:x);}
 
 // ============================================================
 // DASHBOARD
 // ============================================================
 function renderDashboard(){
-  const clientes = state.clientes;
-  const propostas = state.propostas;
-  document.getElementById('d-total-leads').textContent = clientes.filter(c=>![4,5].includes(parseInt(c.etapa))).length;
-  document.getElementById('d-propostas').textContent = clientes.filter(c=>parseInt(c.etapa)===2).length;
-  document.getElementById('d-fechados').textContent = clientes.filter(c=>parseInt(c.etapa)===4).length;
-  document.getElementById('d-perdidos').textContent = clientes.filter(c=>parseInt(c.etapa)===5).length;
-
-  const propNegoc = propostas.filter(p=>[1,2,3].includes(parseInt(p.etapa)));
-  const propFech = propostas.filter(p=>parseInt(p.etapa)===4);
-  document.getElementById('d-val-negoc').textContent = 'R$ '+fmtMoney(propNegoc.reduce((s,p)=>s+(parseFloat(p.mensalidade)||0),0));
-  document.getElementById('d-val-fechado').textContent = 'R$ '+fmtMoney(propFech.reduce((s,p)=>s+(parseFloat(p.mensalidade)||0),0));
-
-  // Segmentos
-  const segs={};
-  clientes.forEach(c=>{if(c.segmento){segs[c.segmento]=(segs[c.segmento]||0)+1;}});
+  const cl=state.clientes,pr=state.propostas;
+  document.getElementById('d-total-leads').textContent=cl.filter(c=>![4,5].includes(parseInt(c.etapa))).length;
+  document.getElementById('d-propostas').textContent=cl.filter(c=>parseInt(c.etapa)===2).length;
+  document.getElementById('d-fechados').textContent=cl.filter(c=>parseInt(c.etapa)===4).length;
+  document.getElementById('d-perdidos').textContent=cl.filter(c=>parseInt(c.etapa)===5).length;
+  // valor negociação: propostas de clientes em etapas 1,2,3
+  const cliNegoc=new Set(cl.filter(c=>[1,2,3].includes(parseInt(c.etapa))).map(c=>c.id));
+  const cliF=new Set(cl.filter(c=>parseInt(c.etapa)===4).map(c=>c.id));
+  document.getElementById('d-val-negoc').textContent='R$ '+fmtMoney(pr.filter(p=>cliNegoc.has(p.clienteId)).reduce((s,p)=>s+(parseFloat(p.mensalidade)||0),0));
+  document.getElementById('d-val-fechado').textContent='R$ '+fmtMoney(pr.filter(p=>cliF.has(p.clienteId)).reduce((s,p)=>s+(parseFloat(p.mensalidade)||0),0));
+  const segs={};cl.forEach(c=>{if(c.segmento)segs[c.segmento]=(segs[c.segmento]||0)+1;});
   const segEl=document.getElementById('d-segmentos');
-  segEl.innerHTML=Object.entries(segs).sort((a,b)=>b[1]-a[1]).slice(0,6).map(([k,v])=>`<span class="badge bg-blue-100 text-blue-700">${k}: ${v}</span>`).join('');
-  if(!Object.keys(segs).length) segEl.innerHTML='<span class="text-slate-400 text-xs">Sem dados</span>';
-
-  // Top produtos
-  const prodCount={};
-  propostas.forEach(p=>{(p.produtos||[]).forEach(pid=>{prodCount[pid]=(prodCount[pid]||0)+1;});});
-  const topProd=Object.entries(prodCount).sort((a,b)=>b[1]-a[1]).slice(0,3);
-  document.getElementById('d-top-produtos').innerHTML=topProd.map(([pid,cnt])=>{
-    const prod=state.produtos.find(p=>p.id===pid);
-    return prod?`<div class="truncate">${cnt}x ${prod.nome}</div>`:'';
-  }).join('')||'<span class="text-slate-400">Sem dados</span>';
-
+  segEl.innerHTML=Object.entries(segs).sort((a,b)=>b[1]-a[1]).slice(0,6).map(([k,v])=>`<span class="badge bg-blue-100 text-blue-700">${k}: ${v}</span>`).join('')||'<span class="text-slate-400 text-xs">Sem dados</span>';
+  const pc={};pr.forEach(p=>normProds(p.produtos).forEach(x=>{pc[x.id]=(pc[x.id]||0)+(parseInt(x.qty)||1);}));
+  document.getElementById('d-top-produtos').innerHTML=Object.entries(pc).sort((a,b)=>b[1]-a[1]).slice(0,3).map(([pid,cnt])=>{const p=state.produtos.find(x=>x.id===pid);return p?`<div class="truncate">${cnt}x ${p.nome}</div>`:''}).join('')||'<span class="text-slate-400">Sem dados</span>';
   // Últimos contatos
-  const sorted=[...clientes].filter(c=>c.dataContato).sort((a,b)=>b.dataContato.localeCompare(a.dataContato)).slice(0,10);
+  const sorted=[...cl].filter(c=>c.dataContato).sort((a,b)=>b.dataContato.localeCompare(a.dataContato)).slice(0,10);
   document.getElementById('d-ultimos-contatos').innerHTML=sorted.length?sorted.map(c=>`
-    <div class="flex items-center justify-between px-3 py-2 row-hover">
-      <div>
-        <div class="font-medium text-slate-700">${c.nome}</div>
-        <div class="text-slate-400">${c.contatoNome||'-'} · ${c.segmento||'-'}</div>
+    <div class="flex items-center justify-between px-3 py-2 row-hover cursor-pointer" onclick="openClienteModal('${c.id}')">
+      <div><div class="font-medium text-slate-700">${c.nome}</div><div class="text-slate-400">${c.contatoNome||'-'} · ${c.segmento||'-'}</div></div>
+      <div class="text-right flex-shrink-0">${stageBadge(parseInt(c.etapa)||0)}<div class="text-slate-400 mt-0.5">${fmtDate(c.dataContato)}</div></div>
+    </div>`).join(''):'<div class="p-3 text-slate-400">Nenhum contato registrado.</div>';
+  // Próximas ações + lembretes
+  const acoes=[];
+  cl.forEach(c=>{
+    if(c.lembreteData)acoes.push({tipo:'lembrete',nome:c.nome,texto:c.lembreteObs||'Lembrete de retorno',data:c.lembreteData,hora:c.lembreteHora||'',etapa:c.etapa,id:c.id});
+    if(c.proximaAcao)acoes.push({tipo:'acao',nome:c.nome,texto:c.proximaAcao,data:c.dataContato||'',etapa:c.etapa,id:c.id});
+  });
+  const acoesVis=acoes.sort((a,b)=>(a.data||'').localeCompare(b.data||'')).slice(0,12);
+  document.getElementById('d-proximas-acoes').innerHTML=acoesVis.length?acoesVis.map(a=>`
+    <div class="flex items-center justify-between px-3 py-2 row-hover cursor-pointer" onclick="openClienteModal('${a.id}')">
+      <div class="flex items-center gap-2">
+        ${a.tipo==='lembrete'?'<svg class="w-3.5 h-3.5 text-amber-500 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"/></svg>':'<svg class="w-3.5 h-3.5 text-blue-400 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>'}
+        <div><div class="font-medium text-slate-700">${a.nome}</div><div class="${a.tipo==='lembrete'?'text-amber-600':'text-slate-400'}">${a.texto}${a.hora?' · '+a.hora:''}</div></div>
       </div>
-      <div class="text-right flex-shrink-0">
-        ${stageBadge(parseInt(c.etapa)||0)}
-        <div class="text-slate-400 mt-0.5">${fmtDate(c.dataContato)}</div>
-      </div>
-    </div>
-  `).join(''):'<div class="p-3 text-slate-400">Nenhum contato registrado.</div>';
-
-  // Próximas ações
-  const acoes=[...clientes].filter(c=>c.proximaAcao).slice(0,10);
-  document.getElementById('d-proximas-acoes').innerHTML=acoes.length?acoes.map(c=>`
-    <div class="flex items-center justify-between px-3 py-2 row-hover">
-      <div>
-        <div class="font-medium text-slate-700">${c.nome}</div>
-        <div class="text-slate-400">${c.proximaAcao}</div>
-      </div>
-      ${stageBadge(parseInt(c.etapa)||0)}
-    </div>
-  `).join(''):'<div class="p-3 text-slate-400">Nenhuma ação pendente.</div>';
+      <div class="flex-shrink-0">${stageBadge(parseInt(a.etapa)||0)}</div>
+    </div>`).join(''):'<div class="p-3 text-slate-400">Nenhuma ação ou lembrete pendente.</div>';
 }
 
 // ============================================================
 // CLIENTES
 // ============================================================
 function populateStageFilters(){
-  ['cli-filter-stage','prop-filter-stage'].forEach(id=>{
-    const el=document.getElementById(id);
-    if(!el) return;
-    const cur=el.value;
-    el.innerHTML='<option value="">Todas etapas</option>'+STAGES.map((s,i)=>`<option value="${i}">${s}</option>`).join('');
-    el.value=cur;
-  });
-  const segEl=document.getElementById('cli-filter-seg');
-  if(segEl){
-    const segs=[...new Set(state.clientes.map(c=>c.segmento).filter(Boolean))];
-    segEl.innerHTML='<option value="">Todos segmentos</option>'+segs.map(s=>`<option>${s}</option>`).join('');
-  }
+  ['cli-filter-stage','prop-filter-stage'].forEach(id=>{const el=document.getElementById(id);if(!el)return;const cur=el.value;el.innerHTML='<option value="">Todas etapas</option>'+STAGES.map((s,i)=>`<option value="${i}">${s}</option>`).join('');el.value=cur;});
+  const se=document.getElementById('cli-filter-seg');if(se){const segs=[...new Set(state.clientes.map(c=>c.segmento).filter(Boolean))];se.innerHTML='<option value="">Todos segmentos</option>'+segs.map(s=>`<option>${s}</option>`).join('');}
 }
-
 function renderClientes(){
   populateStageFilters();
   const search=(document.getElementById('cli-search').value||'').toLowerCase();
-  const filterStage=document.getElementById('cli-filter-stage').value;
-  const filterSeg=document.getElementById('cli-filter-seg').value;
-  let list=state.clientes.filter(c=>{
-    if(search && !c.nome.toLowerCase().includes(search) && !(c.cnpj||'').includes(search)) return false;
-    if(filterStage!=='' && String(c.etapa)!==filterStage) return false;
-    if(filterSeg && c.segmento!==filterSeg) return false;
+  const fs=document.getElementById('cli-filter-stage').value,fg=document.getElementById('cli-filter-seg').value;
+  const list=state.clientes.filter(c=>{
+    if(search&&!c.nome.toLowerCase().includes(search)&&!(c.cnpj||'').includes(search))return false;
+    if(fs!==''&&String(c.etapa)!==fs)return false;
+    if(fg&&c.segmento!==fg)return false;
     return true;
   });
-  const tbody=document.getElementById('clientes-tbody');
-  tbody.innerHTML=list.length?list.map(c=>`
+  document.getElementById('clientes-tbody').innerHTML=list.length?list.map(c=>`
     <tr class="border-b border-slate-100 row-hover">
       <td class="px-3 py-2 font-medium text-slate-800">${c.nome}</td>
       <td class="px-3 py-2 text-slate-500">${c.cnpj||'-'}</td>
@@ -777,26 +639,21 @@ function renderClientes(){
       <td class="px-3 py-2">${c.contatoNome||'-'}<br><span class="text-slate-400">${c.telefone||''}</span></td>
       <td class="px-3 py-2">${stageBadge(parseInt(c.etapa)||0)}</td>
       <td class="px-3 py-2 text-slate-500">${fmtDate(c.dataContato)}</td>
+      <td class="px-3 py-2">${c.lembreteData?`<span class="badge lembrete-badge">🔔 ${fmtDateTime(c.lembreteData,c.lembreteHora)}</span>`:'<span class="text-slate-300">—</span>'}</td>
       <td class="px-3 py-2 text-slate-600 max-w-xs truncate">${c.proximaAcao||'-'}</td>
-      <td class="px-3 py-2">
-        <div class="flex gap-1">
-          <button class="btn-ghost text-xs py-1 px-2" onclick="openClienteModal('${c.id}')">Editar</button>
-          <button class="btn-ghost text-xs py-1 px-2 text-blue-600" onclick="openPropostaModal(null,'${c.id}')">Proposta</button>
-        </div>
-      </td>
-    </tr>
-  `).join(''):`<tr><td colspan="9" class="px-3 py-6 text-center text-slate-400 text-sm">Nenhum cliente encontrado.</td></tr>`;
+      <td class="px-3 py-2"><div class="flex gap-1">
+        <button class="btn-ghost text-xs py-1 px-2" onclick="openClienteModal('${c.id}')">Editar</button>
+        <button class="btn-ghost text-xs py-1 px-2 text-blue-600" onclick="openPropostaModal(null,'${c.id}')">Proposta</button>
+      </div></td>
+    </tr>`).join(''):`<tr><td colspan="10" class="px-3 py-6 text-center text-slate-400 text-sm">Nenhum cliente encontrado.</td></tr>`;
 }
-
 function openClienteModal(id){
   const isNew=!id;
   document.getElementById('modal-cli-title').textContent=isNew?'Novo Cliente':'Editar Cliente';
   document.getElementById('btn-delete-cli').classList.toggle('hidden',isNew);
-  const fields=['id','nome','cnpj','segmento','endereco','uf','tiquete','contato-nome','contato-cargo','telefone','etapa','data-contato','proxima-acao','historico','obs'];
-  fields.forEach(f=>{ const el=document.getElementById('cli-'+f); if(el) el.value=''; });
+  ['id','nome','cnpj','segmento','endereco','uf','tiquete','contato-nome','contato-cargo','telefone','etapa','data-contato','proxima-acao','historico','obs','lembrete-data','lembrete-hora','lembrete-obs'].forEach(f=>{const el=document.getElementById('cli-'+f);if(el)el.value='';});
   if(!isNew){
-    const c=state.clientes.find(x=>x.id===id);
-    if(!c) return;
+    const c=state.clientes.find(x=>x.id===id);if(!c)return;
     document.getElementById('cli-id').value=c.id;
     document.getElementById('cli-nome').value=c.nome||'';
     document.getElementById('cli-cnpj').value=c.cnpj||'';
@@ -812,18 +669,18 @@ function openClienteModal(id){
     document.getElementById('cli-proxima-acao').value=c.proximaAcao||'';
     document.getElementById('cli-historico').value=c.historico||'';
     document.getElementById('cli-obs').value=c.obs||'';
+    document.getElementById('cli-lembrete-data').value=c.lembreteData||'';
+    document.getElementById('cli-lembrete-hora').value=c.lembreteHora||'';
+    document.getElementById('cli-lembrete-obs').value=c.lembreteObs||'';
   } else {
     document.getElementById('cli-data-contato').value=todayStr();
   }
   openModal('modal-cliente');
 }
-
 function saveCliente(){
-  const nome=document.getElementById('cli-nome').value.trim();
-  if(!nome){alert('Nome Fantasia é obrigatório.');return;}
+  const nome=document.getElementById('cli-nome').value.trim();if(!nome){alert('Nome Fantasia é obrigatório.');return;}
   const id=document.getElementById('cli-id').value||uid();
-  const obj={
-    id, nome,
+  const obj={id,nome,
     cnpj:document.getElementById('cli-cnpj').value,
     segmento:document.getElementById('cli-segmento').value,
     endereco:document.getElementById('cli-endereco').value,
@@ -837,25 +694,19 @@ function saveCliente(){
     proximaAcao:document.getElementById('cli-proxima-acao').value,
     historico:document.getElementById('cli-historico').value,
     obs:document.getElementById('cli-obs').value,
+    lembreteData:document.getElementById('cli-lembrete-data').value,
+    lembreteHora:document.getElementById('cli-lembrete-hora').value,
+    lembreteObs:document.getElementById('cli-lembrete-obs').value,
   };
   const idx=state.clientes.findIndex(c=>c.id===id);
-  if(idx>=0) state.clientes[idx]=obj; else state.clientes.unshift(obj);
-  saveState();
-  pushRecord('Clientes',obj);
-  closeModal('modal-cliente');
-  renderClientes();
-  renderKanban();
+  if(idx>=0)state.clientes[idx]=obj;else state.clientes.unshift(obj);
+  saveState();pushRecord('Clientes',obj);closeModal('modal-cliente');renderClientes();renderKanban();
 }
-
 function deleteCliente(){
-  if(!confirm('Excluir este cliente?')) return;
+  if(!confirm('Excluir este cliente?'))return;
   const id=document.getElementById('cli-id').value;
   state.clientes=state.clientes.filter(c=>c.id!==id);
-  saveState();
-  deleteRecord('Clientes',id);
-  closeModal('modal-cliente');
-  renderClientes();
-  renderKanban();
+  saveState();deleteRecord('Clientes',id);closeModal('modal-cliente');renderClientes();renderKanban();
 }
 
 // ============================================================
@@ -864,65 +715,38 @@ function deleteCliente(){
 function renderProdutos(){
   const search=(document.getElementById('prod-search').value||'').toLowerCase();
   const filter=document.getElementById('prod-filter').value;
-  let list=state.produtos.filter(p=>{
-    if(search && !p.nome.toLowerCase().includes(search)) return false;
-    if(filter && p.status!==filter) return false;
-    return true;
-  });
-  const tbody=document.getElementById('produtos-tbody');
-  tbody.innerHTML=list.length?list.map(p=>`
+  const list=state.produtos.filter(p=>{if(search&&!p.nome.toLowerCase().includes(search))return false;if(filter&&p.status!==filter)return false;return true;});
+  document.getElementById('produtos-tbody').innerHTML=list.length?list.map(p=>`
     <tr class="border-b border-slate-100 row-hover">
       <td class="px-3 py-2 font-medium text-slate-800">${p.nome}</td>
       <td class="px-3 py-2 text-slate-700">R$ ${fmtMoney(p.valor)}</td>
       <td class="px-3 py-2 text-slate-500 max-w-xs truncate">${p.descricao||'-'}</td>
       <td class="px-3 py-2"><span class="badge ${p.status==='ativo'?'bg-green-100 text-green-700':'bg-red-100 text-red-500'}">${p.status==='ativo'?'Ativo':'Inativo'}</span></td>
       <td class="px-3 py-2"><button class="btn-ghost text-xs py-1 px-2" onclick="openProdutoModal('${p.id}')">Editar</button></td>
-    </tr>
-  `).join(''):`<tr><td colspan="5" class="px-3 py-6 text-center text-slate-400 text-sm">Nenhum produto encontrado.</td></tr>`;
+    </tr>`).join(''):`<tr><td colspan="5" class="px-3 py-6 text-center text-slate-400 text-sm">Nenhum produto encontrado.</td></tr>`;
 }
-
 function openProdutoModal(id){
   const isNew=!id;
   document.getElementById('modal-prod-title').textContent=isNew?'Novo Produto':'Editar Produto';
   document.getElementById('btn-delete-prod').classList.toggle('hidden',isNew);
-  document.getElementById('prod-id').value='';
-  document.getElementById('prod-nome').value='';
-  document.getElementById('prod-valor').value='';
-  document.getElementById('prod-descricao').value='';
+  ['prod-id','prod-nome','prod-valor','prod-descricao'].forEach(f=>document.getElementById(f).value='');
   document.getElementById('prod-status').value='ativo';
-  if(!isNew){
-    const p=state.produtos.find(x=>x.id===id);
-    if(!p) return;
-    document.getElementById('prod-id').value=p.id;
-    document.getElementById('prod-nome').value=p.nome;
-    document.getElementById('prod-valor').value=p.valor;
-    document.getElementById('prod-descricao').value=p.descricao||'';
-    document.getElementById('prod-status').value=p.status;
-  }
+  if(!isNew){const p=state.produtos.find(x=>x.id===id);if(!p)return;document.getElementById('prod-id').value=p.id;document.getElementById('prod-nome').value=p.nome;document.getElementById('prod-valor').value=p.valor;document.getElementById('prod-descricao').value=p.descricao||'';document.getElementById('prod-status').value=p.status;}
   openModal('modal-produto');
 }
-
 function saveProduto(){
-  const nome=document.getElementById('prod-nome').value.trim();
-  if(!nome){alert('Nome do produto é obrigatório.');return;}
+  const nome=document.getElementById('prod-nome').value.trim();if(!nome){alert('Nome do produto é obrigatório.');return;}
   const id=document.getElementById('prod-id').value||uid();
   const obj={id,nome,valor:parseFloat(document.getElementById('prod-valor').value)||0,descricao:document.getElementById('prod-descricao').value,status:document.getElementById('prod-status').value};
   const idx=state.produtos.findIndex(p=>p.id===id);
-  if(idx>=0) state.produtos[idx]=obj; else state.produtos.unshift(obj);
-  saveState();
-  pushRecord('Produtos',obj);
-  closeModal('modal-produto');
-  renderProdutos();
+  if(idx>=0)state.produtos[idx]=obj;else state.produtos.unshift(obj);
+  saveState();pushRecord('Produtos',obj);closeModal('modal-produto');renderProdutos();
 }
-
 function deleteProduto(){
-  if(!confirm('Excluir este produto?')) return;
+  if(!confirm('Excluir este produto?'))return;
   const id=document.getElementById('prod-id').value;
   state.produtos=state.produtos.filter(p=>p.id!==id);
-  saveState();
-  deleteRecord('Produtos',id);
-  closeModal('modal-produto');
-  renderProdutos();
+  saveState();deleteRecord('Produtos',id);closeModal('modal-produto');renderProdutos();
 }
 
 // ============================================================
@@ -930,91 +754,83 @@ function deleteProduto(){
 // ============================================================
 function renderKanban(){
   const search=(document.getElementById('funil-search').value||'').toLowerCase();
-  const board=document.getElementById('kanban-board');
-  board.innerHTML='';
+  const board=document.getElementById('kanban-board');board.innerHTML='';
   STAGES.forEach((stage,idx)=>{
-    let clientes=state.clientes.filter(c=>parseInt(c.etapa)===idx);
-    if(search) clientes=clientes.filter(c=>c.nome.toLowerCase().includes(search));
+    let cl=state.clientes.filter(c=>parseInt(c.etapa)===idx);
+    if(search)cl=cl.filter(c=>c.nome.toLowerCase().includes(search));
     const col=document.createElement('div');
     col.className='kanban-col flex flex-col h-full bg-slate-100 rounded-xl overflow-hidden border border-slate-200';
     col.innerHTML=`
       <div class="px-3 py-2 flex items-center justify-between flex-shrink-0 bg-white border-b border-slate-200">
         <span class="text-xs font-bold text-slate-600 truncate">${stage}</span>
-        <span class="badge ${STAGE_COLORS[idx]} ml-1 flex-shrink-0">${clientes.length}</span>
+        <span class="badge ${STAGE_COLORS[idx]} ml-1 flex-shrink-0">${cl.length}</span>
       </div>
       <div class="flex-1 overflow-y-auto p-2 flex flex-col gap-2">
-        ${clientes.map(c=>`
+        ${cl.map(c=>`
           <div class="kanban-card bg-white rounded-lg p-2.5 border border-slate-200 shadow-sm" onclick="openClienteModal('${c.id}')">
             <div class="font-semibold text-xs text-slate-800 truncate mb-1">${c.nome}</div>
             ${c.segmento?`<div class="text-xs text-slate-400">${c.segmento}${c.uf?' · '+c.uf:''}</div>`:''}
             ${c.contatoNome?`<div class="text-xs text-slate-500 mt-1 truncate">${c.contatoNome}</div>`:''}
+            ${c.lembreteData?`<div class="text-xs text-amber-600 mt-1 flex items-center gap-1"><svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"/></svg>${fmtDate(c.lembreteData)}${c.lembreteHora?' '+c.lembreteHora:''}</div>`:''}
             ${c.proximaAcao?`<div class="text-xs text-blue-600 mt-1 truncate">${c.proximaAcao}</div>`:''}
             <div class="flex gap-1 mt-2">
               <button class="text-xs bg-slate-100 hover:bg-blue-100 text-slate-600 hover:text-blue-700 rounded px-1.5 py-0.5" onclick="event.stopPropagation();openPropostaModal(null,'${c.id}')">Proposta</button>
             </div>
-          </div>
-        `).join('')}
-        ${!clientes.length?'<div class="text-xs text-slate-400 text-center py-3">Vazio</div>':''}
-      </div>
-    `;
+          </div>`).join('')}
+        ${!cl.length?'<div class="text-xs text-slate-400 text-center py-3">Vazio</div>':''}
+      </div>`;
     board.appendChild(col);
   });
 }
 
 // ============================================================
-// PROPOSTAS
+// PROPOSTAS — lista
 // ============================================================
 function renderPropostas(){
   populateStageFilters();
-  const filterStage=document.getElementById('prop-filter-stage').value;
-  const filterAprov=document.getElementById('prop-filter-aprov').value;
-  let list=state.propostas.filter(p=>{
-    if(filterStage!=='' && String(p.etapa)!==filterStage) return false;
-    if(filterAprov){
-      if(filterAprov==='na' && p.aprovacao) return false;
-      if(filterAprov!=='na' && p.aprovacao!==filterAprov) return false;
-    }
+  const fs=document.getElementById('prop-filter-stage').value,fa=document.getElementById('prop-filter-aprov').value;
+  const list=state.propostas.filter(p=>{
+    const cli=state.clientes.find(c=>c.id===p.clienteId);
+    const etapa=cli?String(cli.etapa):'0';
+    if(fs!==''&&etapa!==fs)return false;
+    if(fa){if(fa==='na'&&p.aprovacao)return false;if(fa!=='na'&&p.aprovacao!==fa)return false;}
     return true;
   });
-  const tbody=document.getElementById('propostas-tbody');
-  tbody.innerHTML=list.length?list.map(p=>{
+  document.getElementById('propostas-tbody').innerHTML=list.length?list.map(p=>{
     const cli=state.clientes.find(c=>c.id===p.clienteId);
-    const prods=(p.produtos||[]).map(pid=>{const pr=state.produtos.find(x=>x.id===pid);return pr?pr.nome:'-';}).join(', ');
-    let aprovBadge='';
-    if(p.aprovacao==='pendente') aprovBadge='<span class="badge approval-pending">Aguardando</span>';
-    else if(p.aprovacao==='aprovado') aprovBadge='<span class="badge approval-ok">Aprovado</span>';
-    else if(p.aprovacao==='reprovado') aprovBadge='<span class="badge approval-rejected">Reprovado</span>';
-    else aprovBadge='<span class="text-slate-400 text-xs">—</span>';
-    return `
-      <tr class="border-b border-slate-100 row-hover">
-        <td class="px-3 py-2 font-medium text-slate-800">${cli?cli.nome:'—'}</td>
-        <td class="px-3 py-2">${stageBadge(parseInt(p.etapa)||0)}</td>
-        <td class="px-3 py-2 text-slate-500 max-w-xs truncate text-xs">${prods||'—'}</td>
-        <td class="px-3 py-2 font-semibold text-slate-800">R$ ${fmtMoney(p.mensalidade)}</td>
-        <td class="px-3 py-2 text-slate-600">${p.descontoPerc?p.descontoPerc+'%':'—'}</td>
-        <td class="px-3 py-2">${aprovBadge}</td>
-        <td class="px-3 py-2 text-slate-400">${fmtDate(p.criadaEm)}</td>
-        <td class="px-3 py-2 text-slate-500 max-w-xs truncate text-xs">${p.obs||'—'}</td>
-        <td class="px-3 py-2">
-          <div class="flex gap-1">
-            <button class="btn-ghost text-xs py-1 px-2" onclick="openPropostaModal('${p.id}')">Editar</button>
-            ${p.aprovacao==='pendente'?`<button class="btn-ghost text-xs py-1 px-2 text-green-600" onclick="aprovarDesconto('${p.id}','aprovado')">Aprovar</button><button class="btn-ghost text-xs py-1 px-2 text-red-600" onclick="aprovarDesconto('${p.id}','reprovado')">Reprovar</button>`:''}
-          </div>
-        </td>
-      </tr>
-    `;
+    const etapa=cli?parseInt(cli.etapa)||0:0;
+    const prods=normProds(p.produtos).map(x=>{const pr=state.produtos.find(y=>y.id===x.id);return pr?`${x.qty||1}x ${pr.nome}`:'-';}).join(', ');
+    let apBadge=p.aprovacao==='pendente'?'<span class="badge approval-pending">Aguardando</span>':p.aprovacao==='aprovado'?'<span class="badge approval-ok">Aprovado</span>':p.aprovacao==='reprovado'?'<span class="badge approval-rejected">Reprovado</span>':'<span class="text-slate-400">—</span>';
+    const cortesia=p.cortesia&&p.cortesia.prodId?state.produtos.find(x=>x.id===p.cortesia.prodId):null;
+    return `<tr class="border-b border-slate-100 row-hover">
+      <td class="px-3 py-2 font-medium text-slate-800">${cli?cli.nome:'—'}</td>
+      <td class="px-3 py-2">${stageBadge(etapa)}</td>
+      <td class="px-3 py-2 text-slate-500 max-w-xs truncate text-xs">${prods||'—'}</td>
+      <td class="px-3 py-2 text-slate-600">R$ ${fmtMoney(p.subtotal)}</td>
+      <td class="px-3 py-2 text-slate-600">${p.descontoPerc?p.descontoPerc+'%':'—'}</td>
+      <td class="px-3 py-2 font-semibold text-blue-800">R$ ${fmtMoney(p.mensalidade)}</td>
+      <td class="px-3 py-2 text-xs text-purple-600">${cortesia?`${p.cortesia.qty}x ${cortesia.nome}`:'—'}</td>
+      <td class="px-3 py-2">${apBadge}</td>
+      <td class="px-3 py-2"><div class="flex gap-1">
+        <button class="btn-ghost text-xs py-1 px-2" onclick="openPropostaModal('${p.id}')">Editar</button>
+        ${p.aprovacao==='pendente'?`<button class="btn-ghost text-xs py-1 px-2 text-green-600" onclick="aprovarDesconto('${p.id}','aprovado')">Aprovar</button><button class="btn-ghost text-xs py-1 px-2 text-red-600" onclick="aprovarDesconto('${p.id}','reprovado')">Reprovar</button>`:''}
+      </div></td>
+    </tr>`;
   }).join(''):`<tr><td colspan="9" class="px-3 py-6 text-center text-slate-400 text-sm">Nenhuma proposta encontrada.</td></tr>`;
 }
+function aprovarDesconto(id,status){const p=state.propostas.find(x=>x.id===id);if(p){p.aprovacao=status;saveState();renderPropostas();}}
 
-function aprovarDesconto(id, status){
-  const p=state.propostas.find(x=>x.id===id);
-  if(p){p.aprovacao=status;saveState();renderPropostas();}
+// ============================================================
+// MODAL PROPOSTA — lógica
+// ============================================================
+function onPropClienteChange(){
+  const cliId=document.getElementById('prop-cliente').value;
+  const cli=state.clientes.find(c=>c.id===cliId);
+  const badge=document.getElementById('prop-etapa-badge');
+  if(cli){const idx=parseInt(cli.etapa)||0;badge.className='badge '+STAGE_COLORS[idx];badge.textContent=STAGES[idx];}
+  else{badge.className='badge stage-0';badge.textContent='';}
 }
-
-// ============================================================
-// MODAL PROPOSTA
-// ============================================================
-function openPropostaModal(id, preClienteId){
+function openPropostaModal(id,preClienteId){
   const isNew=!id;
   document.getElementById('modal-prop-title').textContent=isNew?'Nova Proposta':'Editar Proposta';
   document.getElementById('btn-delete-prop').classList.toggle('hidden',isNew);
@@ -1023,167 +839,164 @@ function openPropostaModal(id, preClienteId){
   document.getElementById('prop-desc-valor').value='';
   document.getElementById('prop-desc-perc').value='';
   document.getElementById('prop-obs').value='';
-  document.getElementById('prop-etapa').value='2';
+  document.getElementById('prop-cortesia-qty').value='0';
+  document.getElementById('prop-cortesia-obs').value='';
   document.getElementById('prop-aprovacao').value='pendente';
   document.getElementById('prop-aprovador').value='';
   document.getElementById('prop-aprovacao-area').classList.add('hidden');
   document.getElementById('prop-desconto-info').classList.add('hidden');
-
-  // Populate cliente select
+  // Cliente select
   const selCli=document.getElementById('prop-cliente');
   selCli.innerHTML=state.clientes.map(c=>`<option value="${c.id}">${c.nome}</option>`).join('');
-  if(preClienteId) selCli.value=preClienteId;
-
-  // Render product list
+  if(preClienteId)selCli.value=preClienteId;
+  onPropClienteChange();
+  // Cortesia select
+  const selCort=document.getElementById('prop-cortesia-prod');
+  selCort.innerHTML='<option value="">Nenhuma</option>'+state.produtos.filter(p=>p.status==='ativo').map(p=>`<option value="${p.id}">${p.nome}</option>`).join('');
+  // Produtos list
   renderPropProdutos([]);
-
-  document.getElementById('prop-total-produtos').textContent='R$ 0,00';
-
+  resetCalc();
   if(!isNew){
-    const p=state.propostas.find(x=>x.id===id);
-    if(!p) return;
+    const p=state.propostas.find(x=>x.id===id);if(!p)return;
     document.getElementById('prop-id').value=p.id;
-    selCli.value=p.clienteId||'';
-    document.getElementById('prop-etapa').value=p.etapa||'2';
-    document.getElementById('prop-mensalidade').value=p.mensalidade||'';
+    selCli.value=p.clienteId||'';onPropClienteChange();
     document.getElementById('prop-desc-valor').value=p.descontoValor||'';
     document.getElementById('prop-desc-perc').value=p.descontoPerc||'';
     document.getElementById('prop-obs').value=p.obs||'';
-    if(p.aprovacao){
-      document.getElementById('prop-aprovacao').value=p.aprovacao;
-      document.getElementById('prop-aprovador').value=p.aprovador||'';
-    }
-    renderPropProdutos(p.produtos||[]);
-    calcTotalProdutos(p.produtos||[]);
-    calcDesconto();
+    if(p.aprovacao){document.getElementById('prop-aprovacao').value=p.aprovacao;document.getElementById('prop-aprovador').value=p.aprovador||'';}
+    if(p.cortesia&&p.cortesia.prodId){selCort.value=p.cortesia.prodId;document.getElementById('prop-cortesia-qty').value=p.cortesia.qty||0;document.getElementById('prop-cortesia-obs').value=p.cortesia.obs||'';}
+    renderPropProdutos(normProds(p.produtos));
+    recalcProposta();
+    // Se mensalidade foi ajustada manualmente
+    if(p.mensalidadeManual)document.getElementById('prop-mensalidade').value=p.mensalidade;
   }
-
   openModal('modal-proposta');
 }
-
 function renderPropProdutos(selected){
-  const container=document.getElementById('prop-produtos-list');
   const ativos=state.produtos.filter(p=>p.status==='ativo');
-  container.innerHTML=ativos.map(p=>`
-    <label class="flex items-center gap-2 px-3 py-1.5 hover:bg-slate-50 cursor-pointer">
-      <input type="checkbox" value="${p.id}" ${selected.includes(p.id)?'checked':''} class="prop-prod-check" onchange="onProdCheck()"/>
-      <span class="text-xs flex-1">${p.nome}</span>
-      <span class="text-xs text-slate-400 flex-shrink-0">R$ ${fmtMoney(p.valor)}</span>
-    </label>
-  `).join('');
+  document.getElementById('prop-produtos-list').innerHTML=ativos.map(p=>{
+    const sel=selected.find(x=>x.id===p.id);
+    return `<label class="flex items-center gap-2 px-3 py-1.5 hover:bg-slate-50 cursor-pointer border-b border-slate-50">
+      <input type="checkbox" value="${p.id}" ${sel?'checked':''} class="prop-prod-check" onchange="recalcProposta()"/>
+      <span class="text-xs flex-1 truncate">${p.nome}</span>
+      <input type="number" min="1" value="${sel?sel.qty:1}" class="prop-prod-qty w-14 border border-slate-200 rounded px-1 py-0.5 text-xs text-center" oninput="recalcProposta()" ${sel?'':'disabled'}/>
+      <span class="text-xs text-slate-400 w-20 text-right flex-shrink-0">R$ ${fmtMoney(p.valor)}</span>
+    </label>`;
+  }).join('');
+  // enable qty inputs for checked
+  document.querySelectorAll('.prop-prod-check').forEach(cb=>{
+    cb.addEventListener('change',()=>{const qty=cb.closest('label').querySelector('.prop-prod-qty');qty.disabled=!cb.checked;if(cb.checked&&(!qty.value||qty.value==='0'))qty.value='1';});
+  });
 }
-
-function getSelectedProdIds(){
-  return [...document.querySelectorAll('.prop-prod-check:checked')].map(el=>el.value);
+function getSelectedProds(){
+  return [...document.querySelectorAll('.prop-prod-check:checked')].map(cb=>{
+    const qty=parseInt(cb.closest('label').querySelector('.prop-prod-qty').value)||1;
+    return {id:cb.value,qty};
+  });
 }
-
-function onProdCheck(){
-  const ids=getSelectedProdIds();
-  calcTotalProdutos(ids);
-  calcDesconto();
+function calcSubtotal(){
+  return getSelectedProds().reduce((s,x)=>{const p=state.produtos.find(y=>y.id===x.id);return s+(p?parseFloat(p.valor)||0:0)*x.qty;},0);
 }
-
-function calcTotalProdutos(ids){
-  const total=ids.reduce((s,id)=>{const p=state.produtos.find(x=>x.id===id);return s+(p?parseFloat(p.valor)||0:0);},0);
-  document.getElementById('prop-total-produtos').textContent='R$ '+fmtMoney(total);
+function calcCortesiaValor(){
+  const pid=document.getElementById('prop-cortesia-prod').value;
+  const qty=parseInt(document.getElementById('prop-cortesia-qty').value)||0;
+  if(!pid||!qty)return 0;
+  const p=state.produtos.find(x=>x.id===pid);
+  return p?(parseFloat(p.valor)||0)*qty:0;
 }
-
+function onCortesiaProdChange(){recalcProposta();}
+function recalcProposta(){
+  const sub=calcSubtotal();
+  const cort=calcCortesiaValor();
+  const descValor=parseFloat(document.getElementById('prop-desc-valor').value)||0;
+  const final=Math.max(0,sub-cort-descValor);
+  document.getElementById('prop-subtotal').textContent='R$ '+fmtMoney(sub);
+  document.getElementById('prop-cortesia-deducao').textContent='- R$ '+fmtMoney(cort);
+  document.getElementById('prop-cortesia-valor-label').textContent='R$ '+fmtMoney(cort);
+  document.getElementById('prop-desc-display').textContent='- R$ '+fmtMoney(descValor);
+  document.getElementById('prop-mensalidade-display').textContent='R$ '+fmtMoney(final);
+  // Auto-fill mensalidade if not manually set
+  const mEl=document.getElementById('prop-mensalidade');
+  if(!mEl.dataset.manual)mEl.value=final.toFixed(2);
+  checkDescontoAprovacao(sub>0?(descValor/sub)*100:0);
+}
+function onMensalidadeManual(){
+  document.getElementById('prop-mensalidade').dataset.manual='1';
+  const mens=parseFloat(document.getElementById('prop-mensalidade').value)||0;
+  document.getElementById('prop-mensalidade-display').textContent='R$ '+fmtMoney(mens);
+}
+function restoreMensalidade(){
+  delete document.getElementById('prop-mensalidade').dataset.manual;
+  recalcProposta();
+}
 function syncDesconto(from){
-  const totalEl=document.getElementById('prop-total-produtos').textContent;
-  const total=parseFloat(totalEl.replace('R$','').replace(/\./g,'').replace(',','.'))||0;
-  const mens=parseFloat(document.getElementById('prop-mensalidade').value)||total;
-  if(from==='valor'){
-    const v=parseFloat(document.getElementById('prop-desc-valor').value)||0;
-    const base=total||mens;
-    if(base>0) document.getElementById('prop-desc-perc').value=((v/base)*100).toFixed(2);
-  } else {
-    const pct=parseFloat(document.getElementById('prop-desc-perc').value)||0;
-    const base=total||mens;
-    document.getElementById('prop-desc-valor').value=((pct/100)*base).toFixed(2);
-  }
-  calcDesconto();
+  const sub=calcSubtotal();const base=sub||parseFloat(document.getElementById('prop-mensalidade').value)||0;
+  if(from==='valor'){const v=parseFloat(document.getElementById('prop-desc-valor').value)||0;if(base>0)document.getElementById('prop-desc-perc').value=((v/base)*100).toFixed(2);}
+  else{const pct=parseFloat(document.getElementById('prop-desc-perc').value)||0;document.getElementById('prop-desc-valor').value=((pct/100)*base).toFixed(2);}
+  recalcProposta();
 }
-
-function calcDesconto(){
-  const pct=parseFloat(document.getElementById('prop-desc-perc').value)||0;
-  const aprovArea=document.getElementById('prop-aprovacao-area');
-  const infoEl=document.getElementById('prop-desconto-info');
-  if(pct>10){
-    aprovArea.classList.remove('hidden');
-    infoEl.classList.remove('hidden');
-    infoEl.className='text-xs mt-1 rounded px-2 py-1 approval-pending';
-    infoEl.textContent=`Desconto de ${pct.toFixed(1)}% excede 10% — requer aprovação da gestão.`;
-  } else if(pct>0){
-    aprovArea.classList.add('hidden');
-    infoEl.classList.remove('hidden');
-    infoEl.className='text-xs mt-1 rounded px-2 py-1 approval-ok';
-    infoEl.textContent=`Desconto de ${pct.toFixed(1)}% aplicado — dentro do limite permitido.`;
-  } else {
-    aprovArea.classList.add('hidden');
-    infoEl.classList.add('hidden');
-  }
+function checkDescontoAprovacao(pct){
+  const aprovArea=document.getElementById('prop-aprovacao-area'),infoEl=document.getElementById('prop-desconto-info');
+  if(pct>10){aprovArea.classList.remove('hidden');infoEl.classList.remove('hidden');infoEl.className='text-xs mt-1 rounded px-2 py-1 approval-pending';infoEl.textContent=`Desconto de ${pct.toFixed(1)}% excede 10% — requer aprovação.`;}
+  else if(pct>0){aprovArea.classList.add('hidden');infoEl.classList.remove('hidden');infoEl.className='text-xs mt-1 rounded px-2 py-1 approval-ok';infoEl.textContent=`Desconto de ${pct.toFixed(1)}% — dentro do limite.`;}
+  else{aprovArea.classList.add('hidden');infoEl.classList.add('hidden');}
 }
-
-function checkAprovacao(){}
-
+function calcDesconto(){recalcProposta();}
+function resetCalc(){
+  document.getElementById('prop-subtotal').textContent='R$ 0,00';
+  document.getElementById('prop-cortesia-deducao').textContent='- R$ 0,00';
+  document.getElementById('prop-cortesia-valor-label').textContent='R$ 0,00';
+  document.getElementById('prop-desc-display').textContent='- R$ 0,00';
+  document.getElementById('prop-mensalidade-display').textContent='R$ 0,00';
+  delete document.getElementById('prop-mensalidade').dataset.manual;
+}
 function saveProposta(){
-  const clienteId=document.getElementById('prop-cliente').value;
-  if(!clienteId){alert('Selecione um cliente.');return;}
-  const pct=parseFloat(document.getElementById('prop-desc-perc').value)||0;
-  const aprovArea=!document.getElementById('prop-aprovacao-area').classList.contains('hidden');
+  const clienteId=document.getElementById('prop-cliente').value;if(!clienteId){alert('Selecione um cliente.');return;}
   const id=document.getElementById('prop-id').value||uid();
-  const prods=getSelectedProdIds();
+  const prods=getSelectedProds();
+  const sub=calcSubtotal();
+  const cort=calcCortesiaValor();
+  const descValor=parseFloat(document.getElementById('prop-desc-valor').value)||0;
+  const descPerc=parseFloat(document.getElementById('prop-desc-perc').value)||0;
+  const mEl=document.getElementById('prop-mensalidade');
+  const mensManual=!!mEl.dataset.manual;
+  const mens=parseFloat(mEl.value)||Math.max(0,sub-cort-descValor);
+  const aprovArea=!document.getElementById('prop-aprovacao-area').classList.contains('hidden');
+  const cortPid=document.getElementById('prop-cortesia-prod').value;
+  const cortQty=parseInt(document.getElementById('prop-cortesia-qty').value)||0;
+  const cortObs=document.getElementById('prop-cortesia-obs').value;
   const obj={
-    id, clienteId,
-    etapa:document.getElementById('prop-etapa').value||'2',
+    id,clienteId,
     produtos:prods,
-    mensalidade:parseFloat(document.getElementById('prop-mensalidade').value)||0,
-    descontoValor:parseFloat(document.getElementById('prop-desc-valor').value)||0,
-    descontoPerc:pct||0,
+    subtotal:sub,
+    cortesia:cortPid&&cortQty>0?{prodId:cortPid,qty:cortQty,valorUnit:cort/cortQty||0,obs:cortObs}:null,
+    mensalidade:mens,
+    mensalidadeManual:mensManual,
+    descontoValor:descValor,
+    descontoPerc:descPerc,
     aprovacao:aprovArea?document.getElementById('prop-aprovacao').value:null,
     aprovador:aprovArea?document.getElementById('prop-aprovador').value:'',
     obs:document.getElementById('prop-obs').value,
     criadaEm:todayStr(),
   };
-  // Sync etapa do cliente
-  const cli=state.clientes.find(c=>c.id===clienteId);
-  if(cli) cli.etapa=obj.etapa;
   const idx=state.propostas.findIndex(p=>p.id===id);
-  if(idx>=0) state.propostas[idx]=obj; else state.propostas.unshift(obj);
-  saveState();
-  pushRecord('Propostas',obj);
-  closeModal('modal-proposta');
-  renderPropostas();
-  renderKanban();
+  if(idx>=0)state.propostas[idx]=obj;else state.propostas.unshift(obj);
+  saveState();pushRecord('Propostas',obj);closeModal('modal-proposta');renderPropostas();renderKanban();
 }
-
 function deleteProposta(){
-  if(!confirm('Excluir esta proposta?')) return;
+  if(!confirm('Excluir esta proposta?'))return;
   const id=document.getElementById('prop-id').value;
   state.propostas=state.propostas.filter(p=>p.id!==id);
-  saveState();
-  deleteRecord('Propostas',id);
-  closeModal('modal-proposta');
-  renderPropostas();
+  saveState();deleteRecord('Propostas',id);closeModal('modal-proposta');renderPropostas();
 }
 
 // ============================================================
 // INIT
 // ============================================================
 document.getElementById('current-date').textContent=new Date().toLocaleDateString('pt-BR',{weekday:'short',day:'2-digit',month:'short',year:'numeric'});
-renderDashboard();
-populateStageFilters();
-// Auto-sync se URL configurada
-if(getApiUrl()){
-  setSyncStatus('ing','Sincronizando...');
-  syncFromSheets().then(()=>{
-    renderDashboard();
-    renderClientes();
-    renderProdutos();
-  });
-} else {
-  setSyncStatus('off','Sem sincronização');
-}
+renderDashboard();populateStageFilters();
+if(getApiUrl()){setSyncStatus('ing','Sincronizando...');syncFromSheets().then(()=>{renderDashboard();renderClientes();renderProdutos();});}
+else setSyncStatus('off','Sem sincronização');
 </script>
 </body>
 </html>
