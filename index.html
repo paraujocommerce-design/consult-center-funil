@@ -459,9 +459,18 @@ async function apiGet(){
 }
 async function apiPost(body){
   const url=getApiUrl();if(!url)return false;
-  setSyncStatus('ing','Sincronizando...');
-  try{await fetch(url,{method:'POST',mode:'no-cors',body:JSON.stringify(body),headers:{'Content-Type':'text/plain'}});setSyncStatus('ok','Sincronizado');return true;}
-  catch(e){setSyncStatus('err','Erro ao salvar');return false;}
+  setSyncStatus('ing','Salvando...');
+  return new Promise(resolve=>{
+    const cb='cc_post_'+Date.now(),sc=document.createElement('script');
+    const t=setTimeout(()=>{cleanup();setSyncStatus('err','Timeout ao salvar');resolve(false);},15000);
+    function cleanup(){delete window[cb];sc.parentNode&&sc.parentNode.removeChild(sc);clearTimeout(t);}
+    window[cb]=d=>{cleanup();if(d&&d.error){setSyncStatus('err','Erro: '+d.error);resolve(false);}else{setSyncStatus('ok','Sincronizado');resolve(true);}};
+    sc.onerror=()=>{cleanup();setSyncStatus('err','Erro ao salvar');resolve(false);};
+    let src=url+'?callback='+cb+'&action='+body.action+'&sheet='+(body.sheet||'')+'&t='+Date.now();
+    if(body.action==='save')   src+='&record='+encodeURIComponent(JSON.stringify(body.record));
+    if(body.action==='delete') src+='&id='+encodeURIComponent(body.record.id);
+    sc.src=src;document.head.appendChild(sc);
+  });
 }
 async function syncFromSheets(){
   const d=await apiGet();if(!d)return;
@@ -986,17 +995,4 @@ function saveProposta(){
 function deleteProposta(){
   if(!confirm('Excluir esta proposta?'))return;
   const id=document.getElementById('prop-id').value;
-  state.propostas=state.propostas.filter(p=>p.id!==id);
-  saveState();deleteRecord('Propostas',id);closeModal('modal-proposta');renderPropostas();
-}
-
-// ============================================================
-// INIT
-// ============================================================
-document.getElementById('current-date').textContent=new Date().toLocaleDateString('pt-BR',{weekday:'short',day:'2-digit',month:'short',year:'numeric'});
-renderDashboard();populateStageFilters();
-if(getApiUrl()){setSyncStatus('ing','Sincronizando...');syncFromSheets().then(()=>{renderDashboard();renderClientes();renderProdutos();});}
-else setSyncStatus('off','Sem sincronização');
-</script>
-</body>
-</html>
+  state.propostas=state.propostas.filter(p=>p.id!
