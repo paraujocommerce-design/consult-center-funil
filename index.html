@@ -73,9 +73,9 @@
   <div class="ml-auto flex items-center gap-3">
     <button onclick="openConfigModal()" class="flex items-center gap-1.5 text-xs text-slate-500 hover:text-blue-700 px-2 py-1 rounded hover:bg-slate-100">
       <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"/><circle cx="12" cy="12" r="3"/></svg>
-      Sheets
+      Supabase
     </button>
-    <button onclick="syncAllToSheets()" class="flex items-center gap-1.5 text-xs text-green-600 hover:text-green-700 px-2 py-1 rounded hover:bg-green-50 border border-green-200">
+    <button onclick="syncAllToSupabase()" class="flex items-center gap-1.5 text-xs text-green-600 hover:text-green-700 px-2 py-1 rounded hover:bg-green-50 border border-green-200">
       <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg>
       Enviar tudo
     </button>
@@ -87,31 +87,34 @@
   </div>
 </header>
 
-<!-- MODAL CONFIG SHEETS -->
+<!-- MODAL CONFIG SUPABASE -->
 <div id="modal-config" class="overlay hidden" onclick="if(event.target===this)closeModal('modal-config')">
-  <div class="modal modal-sm p-0" style="max-width:460px">
+  <div class="modal modal-sm p-0" style="max-width:480px">
     <div class="flex items-center justify-between px-5 py-3 border-b border-slate-100">
-      <span class="font-bold text-slate-700">Configurar Google Sheets</span>
+      <span class="font-bold text-slate-700">Configurar Supabase</span>
       <button onclick="closeModal('modal-config')" class="text-slate-400 hover:text-slate-600 text-lg font-bold">&times;</button>
     </div>
     <div class="p-4 flex flex-col gap-3">
-      <div><label>URL do Web App (Apps Script)</label>
-        <input id="config-api-url" class="form-input mt-1" placeholder="https://script.google.com/macros/s/.../exec"/>
+      <div><label>URL do Projeto Supabase</label>
+        <input id="config-sb-url" class="form-input mt-1" placeholder="https://xxxxxxxxxxxx.supabase.co"/>
+      </div>
+      <div><label>Anon Key (chave pública)</label>
+        <input id="config-sb-key" class="form-input mt-1" placeholder="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."/>
       </div>
       <div id="config-test-result" class="hidden text-xs rounded px-3 py-2"></div>
-      <div class="bg-blue-50 border border-blue-100 rounded-lg p-3 text-xs text-blue-700 leading-relaxed">
-        <strong>Como configurar:</strong><br/>
-        1. Abra <a href="https://script.google.com" target="_blank" class="underline">script.google.com</a><br/>
-        2. Cole o conteúdo do arquivo <strong>Code.gs</strong> e salve<br/>
-        3. <strong>Implantar → Nova implantação</strong> · App da Web · Eu · Qualquer pessoa<br/>
-        4. Copie a URL e cole acima
+      <div class="bg-green-50 border border-green-100 rounded-lg p-3 text-xs text-green-800 leading-relaxed">
+        <strong>Como obter as credenciais:</strong><br/>
+        1. Acesse <a href="https://supabase.com/dashboard" target="_blank" class="underline">supabase.com/dashboard</a><br/>
+        2. Abra seu projeto → <strong>Settings → API</strong><br/>
+        3. Copie a <strong>Project URL</strong> e a <strong>anon public key</strong><br/>
+        4. Cole os valores acima e clique em Salvar
       </div>
     </div>
     <div class="flex justify-between items-center px-5 py-3 border-t border-slate-100 bg-slate-50">
-      <button class="btn-ghost" onclick="testApiConnection()">Testar conexão</button>
+      <button class="btn-ghost" onclick="testSupabaseConnection()">Testar conexão</button>
       <div class="flex gap-2">
-        <button class="btn-ghost" onclick="clearApiConfig()">Remover</button>
-        <button class="btn-primary" onclick="saveApiConfig()">Salvar</button>
+        <button class="btn-ghost" onclick="clearSupabaseConfig()">Remover</button>
+        <button class="btn-primary" onclick="saveSupabaseConfig()">Salvar</button>
       </div>
     </div>
   </div>
@@ -398,9 +401,9 @@
         <div class="calc-box">
           <div class="text-xs font-semibold text-slate-600 mb-2">Resumo do Plano</div>
           <div class="calc-line"><span class="text-slate-500">Subtotal produtos:</span><span id="prop-subtotal" class="font-medium">R$ 0,00</span></div>
-          <div class="calc-line text-purple-600"><span>Cortesia (desconto):</span><span id="prop-cortesia-deducao">- R$ 0,00</span></div>
           <div class="calc-line text-red-500"><span>Desconto comercial:</span><span id="prop-desc-display">- R$ 0,00</span></div>
           <div class="calc-total text-blue-800"><span>Mensalidade Final:</span><span id="prop-mensalidade-display">R$ 0,00</span></div>
+          <div class="calc-line text-purple-600 mt-2 pt-2 border-t border-slate-100"><span>Cortesia concedida:</span><span id="prop-cortesia-deducao">R$ 0,00</span></div>
         </div>
         <!-- Mensalidade -->
         <div>
@@ -445,77 +448,102 @@
 
 <script>
 // ============================================================
-// API – GOOGLE SHEETS
+// API – SUPABASE
 // ============================================================
-function getApiUrl(){return localStorage.getItem('cc_api_url')||'';}
+function getSbUrl(){return (localStorage.getItem('cc_sb_url')||'').replace(/\/$/,'');}
+function getSbKey(){return localStorage.getItem('cc_sb_key')||'';}
 function setSyncStatus(s,l){document.getElementById('sync-dot').className='sync-dot sync-'+s;document.getElementById('sync-label').textContent=l;}
-async function apiGet(){
-  const url=getApiUrl();if(!url)return null;
+function sbHeaders(){return{'Content-Type':'application/json','apikey':getSbKey(),'Authorization':'Bearer '+getSbKey()};}
+
+async function sbFetch(path,opts={}){
+  const base=getSbUrl();if(!base||!getSbKey())return null;
+  try{
+    const r=await fetch(base+'/rest/v1/'+path,{headers:sbHeaders(),...opts});
+    if(!r.ok){const e=await r.text();throw new Error(e);}
+    const ct=r.headers.get('content-type')||'';
+    return ct.includes('json')?await r.json():true;
+  }catch(e){setSyncStatus('err','Erro: '+e.message);return null;}
+}
+
+async function syncFromSupabase(){
+  if(!getSbUrl()||!getSbKey())return;
   setSyncStatus('ing','Sincronizando...');
-  return new Promise(resolve=>{
-    const cb='cc_cb_'+Date.now(),sc=document.createElement('script');
-    const t=setTimeout(()=>{cleanup();setSyncStatus('err','Timeout');resolve(null);},15000);
-    function cleanup(){delete window[cb];sc.parentNode&&sc.parentNode.removeChild(sc);clearTimeout(t);}
-    window[cb]=d=>{cleanup();if(d&&d.error){setSyncStatus('err','Erro: '+d.error);resolve(null);}else{setSyncStatus('ok','Sincronizado');resolve(d);}};
-    sc.onerror=()=>{cleanup();setSyncStatus('err','Erro na conexão');resolve(null);};
-    sc.src=url+'?callback='+cb+'&t='+Date.now();document.head.appendChild(sc);
-  });
-}
-async function apiPost(body){
-  const url=getApiUrl();if(!url)return false;
-  setSyncStatus('ing','Salvando...');
-  return new Promise(resolve=>{
-    const cb='cc_post_'+Date.now(),sc=document.createElement('script');
-    const t=setTimeout(()=>{cleanup();setSyncStatus('err','Timeout ao salvar');resolve(false);},15000);
-    function cleanup(){delete window[cb];sc.parentNode&&sc.parentNode.removeChild(sc);clearTimeout(t);}
-    window[cb]=d=>{cleanup();if(d&&d.error){setSyncStatus('err','Erro: '+d.error);resolve(false);}else{setSyncStatus('ok','Sincronizado');resolve(true);}};
-    sc.onerror=()=>{cleanup();setSyncStatus('err','Erro ao salvar');resolve(false);};
-    let src=url+'?callback='+cb+'&action='+body.action+'&sheet='+(body.sheet||'')+'&t='+Date.now();
-    if(body.action==='save')   src+='&record='+encodeURIComponent(JSON.stringify(body.record));
-    if(body.action==='delete') src+='&id='+encodeURIComponent(body.record.id);
-    sc.src=src;document.head.appendChild(sc);
-  });
-}
-async function syncAllToSheets(){
-  const url=getApiUrl();
-  if(!url){alert('Configure a URL do Sheets primeiro.');return;}
-  if(!confirm('Isso vai enviar TODOS os seus dados locais para o Google Sheets e depois recarregar os dados completos da planilha. Continuar?'))return;
-  setSyncStatus('ing','Enviando tudo...');
-  for(const r of state.clientes){await pushRecord('Clientes',r);}
-  for(const r of state.produtos){await pushRecord('Produtos',r);}
-  for(const r of state.propostas){await pushRecord('Propostas',r);}
-  await syncFromSheets();
-  setSyncStatus('ok','Tudo sincronizado!');
-  renderDashboard();renderClientes();renderProdutos();renderPropostas();renderKanban();
-  alert('Dados enviados e sincronizados com sucesso!');
-}
-async function syncFromSheets(){
-  const d=await apiGet();if(!d)return;
-  if(d.clientes&&d.clientes.length) state.clientes=d.clientes;
-  if(d.produtos&&d.produtos.length){
-    // Mescla: atualiza existentes pelo id, adiciona novos do Sheets, mantém locais
-    d.produtos.forEach(sp=>{
+  const [clientes,produtos,propostas]=await Promise.all([
+    sbFetch('clientes?select=*&order=created_at.desc'),
+    sbFetch('produtos?select=*&order=nome.asc'),
+    sbFetch('propostas?select=*&order=created_at.desc')
+  ]);
+  if(clientes) state.clientes=clientes.map(r=>({...r}));
+  if(produtos&&produtos.length){
+    produtos.forEach(sp=>{
       const idx=state.produtos.findIndex(p=>p.id===sp.id);
       if(idx>=0) state.produtos[idx]=sp; else state.produtos.push(sp);
     });
   }
-  if(d.propostas) state.propostas=d.propostas;
+  if(propostas) state.propostas=propostas.map(r=>({...r}));
   saveState();
+  setSyncStatus('ok','Sincronizado');
 }
-async function pushRecord(sheet,record){return apiPost({action:'save',sheet,record});}
-async function deleteRecord(sheet,id){return apiPost({action:'delete',sheet,record:{id}});}
-function openConfigModal(){document.getElementById('config-api-url').value=getApiUrl();document.getElementById('config-test-result').classList.add('hidden');openModal('modal-config');}
-function saveApiConfig(){const u=document.getElementById('config-api-url').value.trim();localStorage.setItem('cc_api_url',u);closeModal('modal-config');if(u){setSyncStatus('off','Conectando...');syncFromSheets().then(()=>{renderDashboard();renderClientes();renderProdutos();});}else setSyncStatus('off','Sem sincronização');}
-function clearApiConfig(){localStorage.removeItem('cc_api_url');document.getElementById('config-api-url').value='';setSyncStatus('off','Sem sincronização');closeModal('modal-config');}
-async function testApiConnection(){
-  const url=document.getElementById('config-api-url').value.trim();if(!url){alert('Insira a URL.');return;}
+
+async function pushRecord(table,record){
+  if(!getSbUrl()||!getSbKey()){saveState();return;}
+  setSyncStatus('ing','Salvando...');
+  const existing=await sbFetch(table+'?id=eq.'+record.id+'&select=id');
+  const method=existing&&existing.length?'PATCH':'POST';
+  const path=existing&&existing.length?table+'?id=eq.'+record.id:table;
+  const r=await sbFetch(path,{method,body:JSON.stringify(record)});
+  if(r!==null) setSyncStatus('ok','Salvo');
+}
+
+async function deleteRecord(table,id){
+  if(!getSbUrl()||!getSbKey()){saveState();return;}
+  setSyncStatus('ing','Removendo...');
+  const r=await sbFetch(table+'?id=eq.'+id,{method:'DELETE'});
+  if(r!==null) setSyncStatus('ok','Removido');
+}
+
+async function syncAllToSupabase(){
+  if(!getSbUrl()||!getSbKey()){alert('Configure o Supabase primeiro.');return;}
+  if(!confirm('Isso vai enviar TODOS os dados locais para o Supabase e depois recarregar. Continuar?'))return;
+  setSyncStatus('ing','Enviando tudo...');
+  for(const r of state.clientes){await pushRecord('clientes',r);}
+  for(const r of state.produtos){await pushRecord('produtos',r);}
+  for(const r of state.propostas){await pushRecord('propostas',r);}
+  await syncFromSupabase();
+  renderDashboard();renderClientes();renderProdutos();renderPropostas();renderKanban();
+  alert('Dados enviados e sincronizados com sucesso!');
+}
+
+function openConfigModal(){
+  document.getElementById('config-sb-url').value=getSbUrl();
+  document.getElementById('config-sb-key').value=getSbKey();
+  document.getElementById('config-test-result').classList.add('hidden');
+  openModal('modal-config');
+}
+function saveSupabaseConfig(){
+  const u=document.getElementById('config-sb-url').value.trim();
+  const k=document.getElementById('config-sb-key').value.trim();
+  localStorage.setItem('cc_sb_url',u);localStorage.setItem('cc_sb_key',k);
+  closeModal('modal-config');
+  if(u&&k){setSyncStatus('off','Conectando...');syncFromSupabase().then(()=>{renderDashboard();renderClientes();renderProdutos();});}
+  else setSyncStatus('off','Sem sincronização');
+}
+function clearSupabaseConfig(){
+  localStorage.removeItem('cc_sb_url');localStorage.removeItem('cc_sb_key');
+  document.getElementById('config-sb-url').value='';document.getElementById('config-sb-key').value='';
+  setSyncStatus('off','Sem sincronização');closeModal('modal-config');
+}
+async function testSupabaseConnection(){
+  const u=document.getElementById('config-sb-url').value.trim();
+  const k=document.getElementById('config-sb-key').value.trim();
   const el=document.getElementById('config-test-result');
+  if(!u||!k){el.className='text-xs rounded px-3 py-2 bg-amber-50 border border-amber-200 text-amber-700';el.textContent='Preencha URL e Anon Key.';el.classList.remove('hidden');return;}
   el.className='text-xs rounded px-3 py-2 bg-amber-50 border border-amber-200 text-amber-700';el.textContent='Testando...';el.classList.remove('hidden');
-  const cb='cc_test_'+Date.now(),sc=document.createElement('script');
-  const t=setTimeout(()=>{delete window[cb];sc.parentNode&&sc.parentNode.removeChild(sc);el.className='text-xs rounded px-3 py-2 bg-red-50 border border-red-200 text-red-700';el.textContent='Timeout — verifique a URL e o deploy.';},15000);
-  window[cb]=d=>{clearTimeout(t);delete window[cb];sc.parentNode&&sc.parentNode.removeChild(sc);if(d&&d.error){el.className='text-xs rounded px-3 py-2 bg-red-50 border border-red-200 text-red-700';el.textContent='Erro: '+d.error;}else{el.className='text-xs rounded px-3 py-2 bg-green-50 border border-green-200 text-green-700';el.textContent='Conexão bem-sucedida!';}};
-  sc.onerror=()=>{clearTimeout(t);delete window[cb];el.className='text-xs rounded px-3 py-2 bg-red-50 border border-red-200 text-red-700';el.textContent='Não foi possível conectar.';};
-  sc.src=url+'?callback='+cb+'&t='+Date.now();document.head.appendChild(sc);
+  try{
+    const r=await fetch(u.replace(/\/$/,'')+'/rest/v1/produtos?select=id&limit=1',{headers:{'apikey':k,'Authorization':'Bearer '+k}});
+    if(r.ok){el.className='text-xs rounded px-3 py-2 bg-green-50 border border-green-200 text-green-700';el.textContent='Conexão bem-sucedida!';}
+    else{const t=await r.text();el.className='text-xs rounded px-3 py-2 bg-red-50 border border-red-200 text-red-700';el.textContent='Erro '+r.status+': '+t;}
+  }catch(e){el.className='text-xs rounded px-3 py-2 bg-red-50 border border-red-200 text-red-700';el.textContent='Falha na conexão: '+e.message;}
 }
 
 // ============================================================
@@ -902,11 +930,12 @@ function renderPropProdutos(selected){
   const ativos=state.produtos.filter(p=>p.status==='ativo');
   document.getElementById('prop-produtos-list').innerHTML=ativos.map(p=>{
     const sel=selected.find(x=>x.id===p.id);
+    const preco=sel&&sel.preco!=null?sel.preco:p.valor;
     return `<label class="flex items-center gap-2 px-3 py-1.5 hover:bg-slate-50 cursor-pointer border-b border-slate-50">
       <input type="checkbox" value="${p.id}" ${sel?'checked':''} class="prop-prod-check" onchange="recalcProposta()"/>
-      <span class="text-xs flex-1 truncate">${p.nome}</span>
+      <span class="text-xs flex-1 truncate" title="${p.nome}">${p.nome}</span>
       <input type="number" min="1" value="${sel?sel.qty:1}" class="prop-prod-qty w-14 border border-slate-200 rounded px-1 py-0.5 text-xs text-center" oninput="recalcProposta()" ${sel?'':'disabled'}/>
-      <span class="text-xs text-slate-400 w-20 text-right flex-shrink-0">R$ ${fmtMoney(p.valor)}</span>
+      <input type="number" min="0" step="0.01" value="${preco}" class="prop-prod-preco w-20 border border-slate-200 rounded px-1 py-0.5 text-xs text-right" placeholder="R$" oninput="recalcProposta()" title="Preço unitário"/>
     </label>`;
   }).join('');
   // enable qty inputs for checked
@@ -916,12 +945,14 @@ function renderPropProdutos(selected){
 }
 function getSelectedProds(){
   return [...document.querySelectorAll('.prop-prod-check:checked')].map(cb=>{
-    const qty=parseInt(cb.closest('label').querySelector('.prop-prod-qty').value)||1;
-    return {id:cb.value,qty};
+    const label=cb.closest('label');
+    const qty=parseInt(label.querySelector('.prop-prod-qty').value)||1;
+    const preco=parseFloat(label.querySelector('.prop-prod-preco').value)||0;
+    return {id:cb.value,qty,preco};
   });
 }
 function calcSubtotal(){
-  return getSelectedProds().reduce((s,x)=>{const p=state.produtos.find(y=>y.id===x.id);return s+(p?parseFloat(p.valor)||0:0)*x.qty;},0);
+  return getSelectedProds().reduce((s,x)=>s+(x.preco*x.qty),0);
 }
 function calcCortesiaValor(){
   const pid=document.getElementById('prop-cortesia-prod').value;
@@ -935,13 +966,12 @@ function recalcProposta(){
   const sub=calcSubtotal();
   const cort=calcCortesiaValor();
   const descValor=parseFloat(document.getElementById('prop-desc-valor').value)||0;
-  const final=Math.max(0,sub-cort-descValor);
+  const final=Math.max(0,sub-descValor);
   document.getElementById('prop-subtotal').textContent='R$ '+fmtMoney(sub);
-  document.getElementById('prop-cortesia-deducao').textContent='- R$ '+fmtMoney(cort);
+  document.getElementById('prop-cortesia-deducao').textContent='R$ '+fmtMoney(cort);
   document.getElementById('prop-cortesia-valor-label').textContent='R$ '+fmtMoney(cort);
   document.getElementById('prop-desc-display').textContent='- R$ '+fmtMoney(descValor);
   document.getElementById('prop-mensalidade-display').textContent='R$ '+fmtMoney(final);
-  // Auto-fill mensalidade if not manually set
   const mEl=document.getElementById('prop-mensalidade');
   if(!mEl.dataset.manual)mEl.value=final.toFixed(2);
   checkDescontoAprovacao(sub>0?(descValor/sub)*100:0);
@@ -1021,7 +1051,7 @@ function deleteProposta(){
 // ============================================================
 document.getElementById('current-date').textContent=new Date().toLocaleDateString('pt-BR',{weekday:'short',day:'2-digit',month:'short',year:'numeric'});
 renderDashboard();populateStageFilters();
-if(getApiUrl()){setSyncStatus('ing','Sincronizando...');syncFromSheets().then(()=>{renderDashboard();renderClientes();renderProdutos();});}
+if(getSbUrl()&&getSbKey()){setSyncStatus('ing','Sincronizando...');syncFromSupabase().then(()=>{renderDashboard();renderClientes();renderProdutos();});}
 else setSyncStatus('off','Sem sincronização');
 </script>
 </body>
